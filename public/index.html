@@ -156,14 +156,16 @@ body.theme-fog .quote-banner .quote-mark { color: #5d6d7e; }
 /* mobile: compact strip instead of three stacked cards blocking the view */
 @media (max-width: 768px) {
   .widgets { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
-  .widget { min-height: 0; padding: 10px 10px; border-radius: 12px; }
-  .widget-label { margin-bottom: 5px; font-size: 8.5px; letter-spacing: 0.08em; }
+  .widget { min-height: 0; padding: 10px 10px; border-radius: 12px; overflow: hidden; }
+  .widget-label { margin-bottom: 5px; font-size: 8.5px; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .big-stat { font-size: 17px; }
   .big-stat-sub { display: none; }
+  .rank-row { gap: 0; }
   .rank-badge { display: none; }
-  .rank-name { font-size: 12px; }
-  .xp-bar-bg { margin-top: 5px; height: 4px; }
-  .xp-text { font-size: 8px; margin-top: 3px; }
+  .rank-info { width: 100%; }
+  .rank-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .xp-bar-bg { margin-top: 6px; height: 4px; }
+  .xp-text { font-size: 8px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
 .widget {
@@ -690,6 +692,23 @@ body.theme-fog .profile-new .add-btn { background: rgba(0,0,0,0.08); border-colo
       </div>
     </div>
 
+    <div class="section-title">weekly activity <span class="section-sub" id="weeklyResetLabel">resets monday</span></div>
+    <div class="activity-panel">
+      <div class="activity-summary">
+        <div class="activity-icon">🗓️</div>
+        <div>
+          <div class="activity-num" id="weeklyActivityPointsDisplay">0</div>
+          <div class="activity-sub">activity pts this week</div>
+        </div>
+      </div>
+      <div class="activity-bar-wrap">
+        <div class="activity-bar-track">
+          <div class="activity-bar-fill" id="weeklyActivityBarFill" style="width:0%"></div>
+          <div id="weeklyActivityNodes"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="section-title">weekly quests <span class="section-sub">resets every monday</span>
       <button class="add-toggle-btn" id="toggle-weeklyPanel" onclick="toggleAddForm('weeklyPanel')">+ new quest</button>
     </div>
@@ -1115,16 +1134,27 @@ function defaultState() {
     freezeTokens: 0, freezeEarnedTotal: 0,
     seasonKey: getSeasonKey(), seasonXp: 0, claimedMilestones: [],
     unlockedAchievements: {}, pinnedRewardId: null,
-    dailyActivityPoints: 0, dailyActivityClaimed: []
+    dailyActivityPoints: 0, dailyActivityClaimed: [],
+    weeklyActivityPoints: 0, weeklyActivityClaimed: []
   };
 }
 
+const ACTIVITY_MAX = 100;
 const ACTIVITY_MILESTONES = [
   { pts: 20, reward: 5 },
   { pts: 40, reward: 10 },
   { pts: 60, reward: 15 },
   { pts: 80, reward: 20 },
   { pts: 100, reward: 30 }
+];
+
+const WEEKLY_ACTIVITY_MAX = 300;
+const WEEKLY_ACTIVITY_MILESTONES = [
+  { pts: 60, reward: 15 },
+  { pts: 120, reward: 30 },
+  { pts: 180, reward: 45 },
+  { pts: 240, reward: 60 },
+  { pts: 300, reward: 80 }
 ];
 
 // Takes whatever raw JSON came back from the server (possibly {} for a
@@ -1190,6 +1220,8 @@ function applyDefaultsAndRollover(raw) {
       }
       q.completedThisWeek = false;
     });
+    data.weeklyActivityPoints = 0;
+    data.weeklyActivityClaimed = [];
     data.lastWeekStart = weekStart;
   }
 
@@ -1407,21 +1439,17 @@ function render() {
     wishlistBarWrap.style.display = 'none';
   }
 
-  document.getElementById('activityPointsDisplay').textContent = state.dailyActivityPoints;
-  document.getElementById('activityBarFill').style.width = Math.min(100, state.dailyActivityPoints) + '%';
-  const activityNodesEl = document.getElementById('activityNodes');
-  activityNodesEl.innerHTML = '';
-  ACTIVITY_MILESTONES.forEach(m => {
-    const reached = state.dailyActivityPoints >= m.pts;
-    const claimed = state.dailyActivityClaimed.includes(m.pts);
-    const node = document.createElement('div');
-    node.className = 'activity-node' + (reached ? ' reached' : '') + (claimed ? ' claimed' : '');
-    node.style.left = m.pts + '%';
-    node.title = m.pts + ' pts: +' + m.reward + (claimed ? ' (claimed)' : reached ? ' (ready!)' : '');
-    node.textContent = claimed ? '✓' : '🎁';
-    node.onclick = () => claimActivityMilestone(m.pts);
-    node.innerHTML += `<div class="activity-node-label">+${m.reward}</div>`;
-    activityNodesEl.appendChild(node);
+  renderActivityBar({
+    points: state.dailyActivityPoints, max: ACTIVITY_MAX,
+    milestones: ACTIVITY_MILESTONES, claimed: state.dailyActivityClaimed,
+    displayEl: 'activityPointsDisplay', fillEl: 'activityBarFill', nodesEl: 'activityNodes',
+    claimFn: claimActivityMilestone
+  });
+  renderActivityBar({
+    points: state.weeklyActivityPoints, max: WEEKLY_ACTIVITY_MAX,
+    milestones: WEEKLY_ACTIVITY_MILESTONES, claimed: state.weeklyActivityClaimed,
+    displayEl: 'weeklyActivityPointsDisplay', fillEl: 'weeklyActivityBarFill', nodesEl: 'weeklyActivityNodes',
+    claimFn: claimWeeklyActivityMilestone
   });
   updateResetCountdown();
 
@@ -1748,6 +1776,7 @@ function toggleWeekly(id) {
     logDayDone(-1);
     loseePoints(q.points);
     state.completedCount = Math.max(0, state.completedCount - 1);
+    state.weeklyActivityPoints = Math.max(0, state.weeklyActivityPoints - q.points);
   } else {
     q.completedThisWeek = true;
     q.weekStreak += 1;
@@ -1755,6 +1784,7 @@ function toggleWeekly(id) {
     logDayDone(1);
     gainPoints(q.points);
     state.completedCount += 1;
+    state.weeklyActivityPoints = Math.min(WEEKLY_ACTIVITY_MAX, state.weeklyActivityPoints + q.points);
   }
   afterAction();
 }
@@ -1841,6 +1871,40 @@ function claimMilestone(xp) {
   document.getElementById('overlay').classList.add('show');
 }
 
+function renderActivityBar(cfg) {
+  document.getElementById(cfg.displayEl).textContent = cfg.points;
+  document.getElementById(cfg.fillEl).style.width = Math.min(100, (cfg.points / cfg.max) * 100) + '%';
+  const nodesEl = document.getElementById(cfg.nodesEl);
+  nodesEl.innerHTML = '';
+  cfg.milestones.forEach(m => {
+    const reached = cfg.points >= m.pts;
+    const claimed = cfg.claimed.includes(m.pts);
+    const node = document.createElement('div');
+    node.className = 'activity-node' + (reached ? ' reached' : '') + (claimed ? ' claimed' : '');
+    node.style.left = (m.pts / cfg.max) * 100 + '%';
+    node.title = m.pts + ' pts: +' + m.reward + (claimed ? ' (claimed)' : reached ? ' (ready!)' : '');
+    node.textContent = claimed ? '✓' : '🎁';
+    node.onclick = () => cfg.claimFn(m.pts);
+    node.innerHTML += `<div class="activity-node-label">+${m.reward}</div>`;
+    nodesEl.appendChild(node);
+  });
+}
+
+function claimWeeklyActivityMilestone(pts) {
+  if (state.weeklyActivityPoints < pts || state.weeklyActivityClaimed.includes(pts)) return;
+  const m = WEEKLY_ACTIVITY_MILESTONES.find(x => x.pts === pts);
+  state.weeklyActivityClaimed.push(pts);
+  state.points += m.reward;
+  state.lifetimePoints += m.reward;
+  addSeasonXp(m.reward);
+  state.history.push({ name: 'Weekly activity reward (+' + m.reward + ')', date: todayStr(), type: 'activity' });
+  afterAction();
+  document.getElementById('revealIcon').textContent = '🗓️';
+  document.getElementById('revealTitle').textContent = 'Weekly Activity Reward';
+  document.getElementById('revealName').textContent = '+' + m.reward + ' points';
+  document.getElementById('overlay').classList.add('show');
+}
+
 function claimActivityMilestone(pts) {
   if (state.dailyActivityPoints < pts || state.dailyActivityClaimed.includes(pts)) return;
   const m = ACTIVITY_MILESTONES.find(x => x.pts === pts);
@@ -1864,6 +1928,13 @@ function updateResetCountdown() {
   const mins = Math.floor((msLeft % 3600000) / 60000);
   const el = document.getElementById('activityResetLabel');
   if (el) el.textContent = 'resets in ' + hrs + 'h ' + mins + 'm';
+  const daysToMonday = (8 - now.getDay()) % 7 || 7;
+  const nextMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToMonday, 0, 0, 0);
+  const wLeft = nextMonday - now;
+  const wDays = Math.floor(wLeft / 86400000);
+  const wHrs = Math.floor((wLeft % 86400000) / 3600000);
+  const wEl = document.getElementById('weeklyResetLabel');
+  if (wEl) wEl.textContent = 'resets in ' + (wDays > 0 ? wDays + 'd ' : '') + wHrs + 'h';
 }
 setInterval(updateResetCountdown, 60000);
 
