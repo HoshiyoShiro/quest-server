@@ -338,6 +338,34 @@ body.theme-fog .stat-card { background: rgba(0, 0, 0, 0.03); border-color: rgba(
 body.theme-fog .stat-num { color: #5d6d7e; }
 .stat-label { font-size: 9.5px; opacity: 0.5; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
 
+.day-chart { display: flex; gap: 5px; align-items: flex-end; height: 96px; padding-top: 6px; }
+.day-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 2px; min-width: 0; height: 100%; }
+.day-bar { border-radius: 3px; min-height: 0; transition: height .3s ease; }
+.day-bar.done { background: var(--warm); }
+.day-bar.missed { background: #e08a7a; }
+body.theme-fog .day-bar.done { background: #5d6d7e; }
+.day-col-label { font-size: 8px; opacity: 0.5; text-align: center; margin-top: 4px; white-space: nowrap; }
+.day-col.today .day-col-label { color: var(--warm); opacity: 1; }
+body.theme-fog .day-col.today .day-col-label { color: #5d6d7e; }
+.chart-legend { display: flex; gap: 16px; font-size: 10px; opacity: 0.6; margin-top: 10px; }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+.legend-dot.legend-done { background: var(--warm); }
+body.theme-fog .legend-dot.legend-done { background: #5d6d7e; }
+.legend-dot.legend-missed { background: #e08a7a; }
+
+.report-row { display: flex; align-items: center; gap: 12px; }
+.report-main { flex: 1; min-width: 0; }
+.report-name { font-size: 13px; font-weight: 500; word-break: break-word; }
+.report-meta { font-size: 10.5px; opacity: 0.55; margin-top: 2px; display: flex; gap: 12px; flex-wrap: wrap; }
+.report-meta .miss { color: #e08a7a; opacity: 0.9; }
+.report-rate { font-family: var(--pixel); font-size: 14px; color: var(--warm); flex-shrink: 0; width: 48px; text-align: right; }
+body.theme-fog .report-rate { color: #5d6d7e; }
+.report-bar { width: 90px; height: 6px; background: rgba(255,255,255,0.08); border-radius: 6px; overflow: hidden; flex-shrink: 0; }
+body.theme-fog .report-bar { background: rgba(0,0,0,0.08); }
+.report-bar-fill { height: 100%; background: var(--warm); border-radius: 6px; }
+body.theme-fog .report-bar-fill { background: #5d6d7e; }
+@media (max-width: 640px) { .report-bar { display: none; } }
+
 .history-list { display: flex; flex-direction: column; gap: 10px; }
 .history-item {
   font-size: 12px; line-height: 1.5; border-left: 2px solid rgba(255, 255, 255, 0.15);
@@ -726,7 +754,23 @@ body.theme-fog .profile-card h2 { color: #5d6d7e; }
       <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">best streak</div></div>
       <div class="stat-card"><div class="stat-num" id="statLifetime">0</div><div class="stat-label">lifetime xp</div></div>
       <div class="stat-card"><div class="stat-num" id="statRedeemed">0</div><div class="stat-label">redeemed</div></div>
+      <div class="stat-card"><div class="stat-num" id="statRate7">—</div><div class="stat-label">7-day rate</div></div>
+      <div class="stat-card"><div class="stat-num" id="statRate30">—</div><div class="stat-label">30-day rate</div></div>
+      <div class="stat-card"><div class="stat-num" id="statMissed30">0</div><div class="stat-label">missed (30d)</div></div>
+      <div class="stat-card"><div class="stat-num" id="statBestDay">—</div><div class="stat-label">best day (30d)</div></div>
     </div>
+
+    <div class="section-title">last 14 days <span class="section-sub">done vs missed per day</span></div>
+    <div class="widget" style="display:block;">
+      <div class="day-chart" id="dayChart"></div>
+      <div class="chart-legend">
+        <span><span class="legend-dot legend-done"></span> done</span>
+        <span><span class="legend-dot legend-missed"></span> missed</span>
+      </div>
+    </div>
+
+    <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
+    <div class="card-list" id="questReport"></div>
   </div>
 
   <footer>
@@ -1022,6 +1066,7 @@ function defaultState() {
     dailyQuests: [], weeklyQuests: [], goals: [], rewards: [], history: [], quotes: [],
     notes: '',
     bestStreak: 0, completedCount: 0, redeemedCount: 0,
+    dayLog: {},
     lastActiveDate: today, lastWeekStart: getWeekStart(),
     lastLoginDate: null, loginStreak: 0, loginHistory: [],
     freezeTokens: 0, freezeEarnedTotal: 0,
@@ -1062,8 +1107,11 @@ function applyDefaultsAndRollover(raw) {
   }
 
   if (data.lastActiveDate !== today) {
+    let missedOnLastDay = 0;
     data.dailyQuests.forEach(q => {
       if (!q.completedToday) {
+        q.missedCount = (q.missedCount || 0) + 1;
+        missedOnLastDay += 1;
         if (data.freezeTokens > 0 && q.streak > 0) {
           data.freezeTokens -= 1;
           data.history.push({ name: 'Streak Freeze protected "' + q.name + '" (streak kept at ' + q.streak + ')', date: today, type: 'freeze' });
@@ -1071,6 +1119,20 @@ function applyDefaultsAndRollover(raw) {
       }
       q.completedToday = false;
     });
+    if (missedOnLastDay > 0) {
+      const entry = data.dayLog[data.lastActiveDate] || { done: 0, missed: 0 };
+      entry.missed += missedOnLastDay;
+      data.dayLog[data.lastActiveDate] = entry;
+    }
+    // days fully skipped between last visit and today: every daily counts as missed
+    let gapDay = addDays(data.lastActiveDate, 1);
+    let guard = 0;
+    while (gapDay < today && guard < 60 && data.dailyQuests.length > 0) {
+      if (!data.dayLog[gapDay]) data.dayLog[gapDay] = { done: 0, missed: data.dailyQuests.length };
+      data.dailyQuests.forEach(q => { q.missedCount = (q.missedCount || 0) + 1; });
+      gapDay = addDays(gapDay, 1);
+      guard += 1;
+    }
     data.dailyActivityPoints = 0;
     data.dailyActivityClaimed = [];
     data.lastActiveDate = today;
@@ -1079,11 +1141,18 @@ function applyDefaultsAndRollover(raw) {
   const weekStart = getWeekStart();
   if (data.lastWeekStart !== weekStart) {
     data.weeklyQuests.forEach(q => {
-      if (!q.completedThisWeek) q.weekStreak = 0;
+      if (!q.completedThisWeek) {
+        q.weekStreak = 0;
+        q.missedCount = (q.missedCount || 0) + 1;
+      }
       q.completedThisWeek = false;
     });
     data.lastWeekStart = weekStart;
   }
+
+  // keep dayLog bounded to the last 60 days
+  const dayLogCutoff = addDays(today, -60);
+  for (const k in data.dayLog) { if (k < dayLogCutoff) delete data.dayLog[k]; }
 
   const seasonKey = getSeasonKey();
   if (data.seasonKey !== seasonKey) {
@@ -1352,6 +1421,101 @@ function render() {
   document.getElementById('statStreak').textContent = state.bestStreak;
   document.getElementById('statLifetime').textContent = state.lifetimePoints;
   document.getElementById('statRedeemed').textContent = state.redeemedCount;
+
+  renderStatistics();
+}
+
+/* ============ STATISTICS ============ */
+function windowTotals(days) {
+  const today = todayStr();
+  let done = 0, missed = 0, bestDay = null, bestDone = 0;
+  for (let i = 0; i < days; i++) {
+    const day = addDays(today, -i);
+    const e = state.dayLog[day];
+    if (!e) continue;
+    done += e.done;
+    missed += e.missed;
+    if (e.done > bestDone) { bestDone = e.done; bestDay = day; }
+  }
+  return { done, missed, bestDay, bestDone };
+}
+
+function renderStatistics() {
+  const w7 = windowTotals(7);
+  const w30 = windowTotals(30);
+  const rate = w => (w.done + w.missed) > 0 ? Math.round(100 * w.done / (w.done + w.missed)) + '%' : '—';
+  document.getElementById('statRate7').textContent = rate(w7);
+  document.getElementById('statRate30').textContent = rate(w30);
+  document.getElementById('statMissed30').textContent = w30.missed;
+  document.getElementById('statBestDay').textContent = w30.bestDay
+    ? new Date(w30.bestDay + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+    : '—';
+
+  // 14-day done/missed chart
+  const chart = document.getElementById('dayChart');
+  chart.innerHTML = '';
+  const today = todayStr();
+  let maxCount = 1;
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const day = addDays(today, -i);
+    const e = state.dayLog[day] || { done: 0, missed: 0 };
+    maxCount = Math.max(maxCount, e.done + e.missed);
+    days.push({ day, done: e.done, missed: e.missed });
+  }
+  days.forEach(d => {
+    const col = document.createElement('div');
+    col.className = 'day-col' + (d.day === today ? ' today' : '');
+    col.title = d.day + ': ' + d.done + ' done, ' + d.missed + ' missed';
+    const donePct = (d.done / maxCount) * 100;
+    const missedPct = (d.missed / maxCount) * 100;
+    const label = new Date(d.day + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short' })[0];
+    col.innerHTML =
+      (d.missed > 0 ? `<div class="day-bar missed" style="height:${missedPct}%"></div>` : '') +
+      (d.done > 0 ? `<div class="day-bar done" style="height:${donePct}%"></div>` : '') +
+      `<div class="day-col-label">${label}</div>`;
+    chart.appendChild(col);
+  });
+
+  // per-quest report
+  const report = document.getElementById('questReport');
+  report.innerHTML = '';
+  const rows = [
+    ...state.dailyQuests.map(q => ({ q, kind: 'daily' })),
+    ...state.weeklyQuests.map(q => ({ q, kind: 'weekly' }))
+  ];
+  if (rows.length === 0) {
+    report.innerHTML = '<div class="empty-state">no recurring quests yet — stats show up once you add some.</div>';
+    return;
+  }
+  rows.sort((a, b) => ((b.q.doneCount || 0) + (b.q.missedCount || 0)) - ((a.q.doneCount || 0) + (a.q.missedCount || 0)));
+  rows.forEach(({ q, kind }) => {
+    const done = q.doneCount || 0;
+    const missed = q.missedCount || 0;
+    const total = done + missed;
+    const pct = total > 0 ? Math.round(100 * done / total) : null;
+    const card = document.createElement('div');
+    card.className = 'quest-card report-row';
+    card.innerHTML = `
+      <div class="report-main">
+        <div class="report-name">${escapeHtml(q.name)}</div>
+        <div class="report-meta">
+          <span>${kind}</span>
+          <span>${done} done</span>
+          <span class="${missed > 0 ? 'miss' : ''}">${missed} missed</span>
+        </div>
+      </div>
+      <div class="report-bar"><div class="report-bar-fill" style="width:${pct === null ? 0 : pct}%"></div></div>
+      <div class="report-rate">${pct === null ? '—' : pct + '%'}</div>
+    `;
+    report.appendChild(card);
+  });
+}
+
+function logDayDone(delta) {
+  const t = todayStr();
+  const entry = state.dayLog[t] || (state.dayLog[t] = { done: 0, missed: 0 });
+  entry.done = Math.max(0, entry.done + delta);
 }
 
 function gainPoints(amount) { state.points += amount; state.lifetimePoints += amount; addSeasonXp(amount); }
@@ -1376,7 +1540,7 @@ function addDaily() {
   const name = nameEl.value.trim();
   const pts = parseInt(ptsEl.value) || 10;
   if (!name) return;
-  state.dailyQuests.push({ id: uid(), name, points: pts, streak: 0, completedToday: false });
+  state.dailyQuests.push({ id: uid(), name, points: pts, streak: 0, completedToday: false, doneCount: 0, missedCount: 0 });
   nameEl.value = '';
   afterAction();
   closeAddForm('dailyPanel');
@@ -1387,12 +1551,16 @@ function toggleDaily(id) {
   if (q.completedToday) {
     q.completedToday = false;
     q.streak = Math.max(0, q.streak - 1);
+    q.doneCount = Math.max(0, (q.doneCount || 0) - 1);
+    logDayDone(-1);
     loseePoints(q.points);
     state.completedCount = Math.max(0, state.completedCount - 1);
     state.dailyActivityPoints = Math.max(0, state.dailyActivityPoints - q.points);
   } else {
     q.completedToday = true;
     q.streak += 1;
+    q.doneCount = (q.doneCount || 0) + 1;
+    logDayDone(1);
     gainPoints(q.points);
     state.completedCount += 1;
     state.dailyActivityPoints = Math.min(100, state.dailyActivityPoints + q.points);
@@ -1413,7 +1581,7 @@ function addWeekly() {
   const name = nameEl.value.trim();
   const pts = parseInt(ptsEl.value) || 40;
   if (!name) return;
-  state.weeklyQuests.push({ id: uid(), name, points: pts, weekStreak: 0, completedThisWeek: false });
+  state.weeklyQuests.push({ id: uid(), name, points: pts, weekStreak: 0, completedThisWeek: false, doneCount: 0, missedCount: 0 });
   nameEl.value = '';
   afterAction();
   closeAddForm('weeklyPanel');
@@ -1424,11 +1592,15 @@ function toggleWeekly(id) {
   if (q.completedThisWeek) {
     q.completedThisWeek = false;
     q.weekStreak = Math.max(0, q.weekStreak - 1);
+    q.doneCount = Math.max(0, (q.doneCount || 0) - 1);
+    logDayDone(-1);
     loseePoints(q.points);
     state.completedCount = Math.max(0, state.completedCount - 1);
   } else {
     q.completedThisWeek = true;
     q.weekStreak += 1;
+    q.doneCount = (q.doneCount || 0) + 1;
+    logDayDone(1);
     gainPoints(q.points);
     state.completedCount += 1;
   }
@@ -1452,10 +1624,12 @@ function toggleGoal(id) {
   if (!g) return;
   if (g.completed) {
     g.completed = false;
+    logDayDone(-1);
     loseePoints(g.points);
     state.completedCount = Math.max(0, state.completedCount - 1);
   } else {
     g.completed = true;
+    logDayDone(1);
     gainPoints(g.points);
     state.completedCount += 1;
   }
