@@ -11,6 +11,21 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 const PROFILE_NAME_RE = /^[a-zA-Z0-9_-]{1,30}$/;
 function profilePath(name) { return path.join(DATA_DIR, name + '.json'); }
 
+const BACKUP_KEEP = 7;
+// Snapshot a profile once per day before its first overwrite, keep the last 7.
+function backupProfile(name) {
+  const file = profilePath(name);
+  if (!fs.existsSync(file)) return;
+  const dir = path.join(DATA_DIR, '_backups', name);
+  fs.mkdirSync(dir, { recursive: true });
+  const today = new Date().toISOString().slice(0, 10);
+  const dest = path.join(dir, today + '.json');
+  if (fs.existsSync(dest)) return;
+  fs.copyFileSync(file, dest);
+  const old = fs.readdirSync(dir).filter(f => f.endsWith('.json')).sort();
+  while (old.length > BACKUP_KEEP) fs.unlinkSync(path.join(dir, old.shift()));
+}
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -104,6 +119,7 @@ const server = http.createServer(async (req, res) => {
 
       if (p.startsWith('/api/state/') && req.method === 'PUT') {
         const body = await readBody(req);
+        try { backupProfile(name); } catch (e) { console.error('Backup failed for ' + name + ':', e.message); }
         fs.writeFileSync(file, JSON.stringify(body ?? {}), 'utf8');
         return sendJson(res, 200, { ok: true });
       }

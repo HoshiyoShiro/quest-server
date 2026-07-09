@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>quest log</title>
+<meta name="theme-color" content="#0d0b14">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" href="/icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -160,12 +164,16 @@ body.theme-fog .quote-banner .quote-mark { color: #5d6d7e; }
   .widget-label { margin-bottom: 5px; font-size: 8.5px; letter-spacing: 0.08em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .big-stat { font-size: 17px; }
   .big-stat-sub { display: none; }
-  .rank-row { gap: 0; }
-  .rank-badge { display: none; }
-  .rank-info { width: 100%; }
-  .rank-name { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .xp-bar-bg { margin-top: 6px; height: 4px; }
-  .xp-text { font-size: 8px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* rank tile mirrors the other tiles: label, big number, thin bar */
+  .rank-row { flex-direction: column; align-items: stretch; gap: 2px; }
+  .rank-badge {
+    width: auto; height: auto; border: none; background: none; border-radius: 0;
+    justify-content: flex-start; font-size: 17px;
+  }
+  body.theme-fog .rank-badge { background: none; border: none; }
+  .rank-name { display: none; }
+  .xp-text { display: none; }
+  .xp-bar-bg { margin-top: 4px; height: 4px; }
 }
 
 .widget {
@@ -272,6 +280,59 @@ body.theme-fog .cat-chevron { color: #5d6d7e; }
 .cat-count { margin-left: auto; opacity: 0.6; font-size: 10px; font-family: var(--pixel); flex-shrink: 0; }
 .cat-header.all-done .cat-count { color: var(--warm); opacity: 1; }
 body.theme-fog .cat-header.all-done .cat-count { color: #5d6d7e; }
+
+/* weekday scheduling */
+.quest-card.rest { opacity: 0.45; }
+.quest-card.rest .check { cursor: default; border-style: dashed; }
+.day-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; width: 100%; }
+.day-chip {
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: inherit;
+  opacity: 0.55; border-radius: 16px; padding: 4px 10px; font-size: 10.5px; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; transition: all 0.15s ease;
+}
+.day-chip.on { background: rgba(232, 184, 109, 0.18); border-color: rgba(232, 184, 109, 0.45); color: var(--warm); opacity: 1; }
+body.theme-fog .day-chip { background: rgba(0, 0, 0, 0.05); border-color: rgba(0, 0, 0, 0.12); }
+body.theme-fog .day-chip.on { background: rgba(93, 109, 126, 0.15); border-color: rgba(93, 109, 126, 0.5); color: #5d6d7e; }
+.day-picker-hint { font-size: 9.5px; opacity: 0.45; margin-top: 6px; }
+
+/* sub-tasks */
+.sub-btn {
+  background: none; border: none; color: inherit; opacity: 0.35; font-size: 12px; cursor: pointer;
+  padding: 2px 4px; flex-shrink: 0; font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+}
+.sub-btn:hover { opacity: 0.8; }
+.sub-btn.has { opacity: 0.85; color: var(--warm); }
+body.theme-fog .sub-btn.has { color: #5d6d7e; }
+.sub-panel { margin: 8px 0 2px 38px; display: flex; flex-direction: column; gap: 7px; }
+.sub-row { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+.sub-check { width: 18px; height: 18px; font-size: 10px; }
+.sub-name { flex: 1; min-width: 0; word-break: break-word; }
+.sub-name.strike { text-decoration: line-through; opacity: 0.55; }
+.sub-add { display: flex; gap: 6px; margin-top: 2px; }
+.sub-add input {
+  flex: 1; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px; padding: 6px 10px; font-size: 12px; color: inherit;
+  font-family: 'JetBrains Mono', monospace; outline: none; min-width: 0;
+}
+body.theme-fog .sub-add input { background: rgba(0, 0, 0, 0.05); border-color: rgba(0, 0, 0, 0.1); color: #2c3e50; }
+.sub-add .add-btn { padding: 6px 12px; }
+@media (max-width: 640px) { .sub-panel { margin-left: 18px; } }
+
+/* year heatmap */
+.heatmap-scroll { overflow-x: auto; padding-bottom: 4px; }
+.heatmap { display: flex; gap: 3px; width: max-content; }
+.hm-col { display: flex; flex-direction: column; gap: 3px; }
+.hm-cell { width: 10px; height: 10px; border-radius: 2px; background: rgba(255, 255, 255, 0.06); }
+.hm-cell.h1 { background: rgba(232, 184, 109, 0.3); }
+.hm-cell.h2 { background: rgba(232, 184, 109, 0.5); }
+.hm-cell.h3 { background: rgba(232, 184, 109, 0.75); }
+.hm-cell.h4 { background: var(--warm); }
+.hm-cell.hm-miss { background: rgba(224, 138, 122, 0.4); }
+body.theme-fog .hm-cell { background: rgba(0, 0, 0, 0.07); }
+body.theme-fog .hm-cell.h1 { background: rgba(93, 109, 126, 0.3); }
+body.theme-fog .hm-cell.h2 { background: rgba(93, 109, 126, 0.5); }
+body.theme-fog .hm-cell.h3 { background: rgba(93, 109, 126, 0.75); }
+body.theme-fog .hm-cell.h4 { background: #5d6d7e; }
 
 .add-form-panel {
   background: rgba(232, 184, 109, 0.04); border: 1px dashed rgba(232, 184, 109, 0.25);
@@ -690,6 +751,8 @@ body.theme-fog .profile-new .add-btn { background: rgba(0,0,0,0.08); border-colo
         <input type="number" name="pts" id="dailyPts" placeholder="pts" value="20" min="1">
         <button class="add-btn" onclick="addDaily()">+ add</button>
       </div>
+      <div class="day-picker" id="dailyDays"></div>
+      <div class="day-picker-hint">active days — leave blank for every day (rest days don't break streaks or count as missed)</div>
     </div>
 
     <div class="section-title">weekly activity <span class="section-sub" id="weeklyResetLabel">resets monday</span></div>
@@ -826,10 +889,19 @@ body.theme-fog .profile-new .add-btn { background: rgba(0,0,0,0.08); border-colo
     <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
     <div class="card-list" id="questReport"></div>
 
+    <div class="section-title">past year <span class="section-sub">quest completions per day</span></div>
+    <div class="widget" style="display:block;">
+      <div class="heatmap-scroll"><div class="heatmap" id="heatmap"></div></div>
+    </div>
+
     <div class="section-title">data</div>
     <div class="widget" style="display:block;">
-      <button class="add-btn" onclick="exportData()">⬇ export profile data (.json)</button>
-      <div class="info-note" style="margin-top:10px;">downloads all quests, points, stats, history and settings for the current profile as a JSON file.</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="add-btn" onclick="exportData()">⬇ export profile data (.json)</button>
+        <button class="add-btn" onclick="document.getElementById('importFile').click()">⬆ import profile data</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" class="hidden">
+      <div class="info-note" style="margin-top:10px;">export downloads everything for this profile as JSON. import replaces this profile's data with a previously exported file (server keeps 7 daily backups as safety net).</div>
     </div>
   </div>
 
@@ -1096,6 +1168,38 @@ function dayOfYear(d) {
   return Math.floor(diff / 86400000);
 }
 
+// weekday scheduling: q.days = [0..6] (getDay values); empty/missing = active every day
+function questActiveOn(q, dateStr) {
+  if (!q.days || q.days.length === 0) return true;
+  return q.days.includes(new Date(dateStr + 'T00:00:00').getDay());
+}
+function questActiveToday(q) { return questActiveOn(q, todayStr()); }
+
+const DAY_CHIPS = [
+  { d: 1, l: 'mon' }, { d: 2, l: 'tue' }, { d: 3, l: 'wed' }, { d: 4, l: 'thu' },
+  { d: 5, l: 'fri' }, { d: 6, l: 'sat' }, { d: 0, l: 'sun' }
+];
+function daysLabel(q) {
+  if (!q.days || q.days.length === 0) return '';
+  return DAY_CHIPS.filter(c => q.days.includes(c.d)).map(c => c.l).join('·');
+}
+function buildDayPicker(el, selected) {
+  el.innerHTML = '';
+  DAY_CHIPS.forEach(c => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'day-chip' + ((selected || []).includes(c.d) ? ' on' : '');
+    b.textContent = c.l;
+    b.dataset.d = c.d;
+    b.onclick = () => b.classList.toggle('on');
+    el.appendChild(b);
+  });
+}
+function readDayPicker(el) {
+  const days = [...el.querySelectorAll('.day-chip.on')].map(b => parseInt(b.dataset.d));
+  return (days.length === 0 || days.length === 7) ? [] : days.sort((a, b) => a - b);
+}
+
 const SEASON_MILESTONES = [
   { xp: 50,   reward: 20,  icon: '🥉' },
   { xp: 150,  reward: 35,  icon: '🥈' },
@@ -1118,7 +1222,19 @@ const ACHIEVEMENTS = [
   { id: 'rank10', icon: '👑', name: 'Veteran', desc: 'Reach Rank 10', check: s => calcRank(s.lifetimePoints).level >= 10 },
   { id: 'shielded', icon: '🛡️', name: 'Safety Net', desc: 'Earn your first Streak Freeze token', check: s => s.freezeEarnedTotal >= 1 },
   { id: 'season_clear', icon: '🎫', name: 'Season Pass Holder', desc: 'Claim every milestone in a season', check: s => s.claimedMilestones.length >= SEASON_MILESTONES.length },
-  { id: 'wordsmith', icon: '📖', name: 'Wordsmith', desc: 'Save 5 quotes to your inspiration board', check: s => s.quotes.length >= 5 }
+  { id: 'wordsmith', icon: '📖', name: 'Wordsmith', desc: 'Save 5 quotes to your inspiration board', check: s => s.quotes.length >= 5 },
+  { id: 'half_k', icon: '⚡', name: 'Unstoppable', desc: 'Complete 500 quests', check: s => s.completedCount >= 500 },
+  { id: 'login7', icon: '📅', name: 'Regular', desc: '7-day login streak', check: s => s.loginStreak >= 7 },
+  { id: 'login30', icon: '🌒', name: 'Devoted', desc: '30-day login streak', check: s => s.loginStreak >= 30 },
+  { id: 'rank20', icon: '🚀', name: 'Ascended', desc: 'Reach Rank 20', check: s => calcRank(s.lifetimePoints).level >= 20 },
+  { id: 'freeze5', icon: '🧊', name: 'Iceberg', desc: 'Earn 5 Streak Freeze tokens', check: s => s.freezeEarnedTotal >= 5 },
+  { id: 'perfect_day', icon: '✨', name: 'Perfect Day', desc: 'Complete every daily quest (3+) in one day', check: s => { const act = s.dailyQuests.filter(questActiveToday); return act.length >= 3 && act.every(q => q.completedToday); } },
+  { id: 'organizer', icon: '🗂️', name: 'Organizer', desc: 'Use 3 different quest categories', check: s => new Set([...s.dailyQuests, ...s.weeklyQuests, ...s.goals].filter(q => q.category).map(q => q.category)).size >= 3 },
+  { id: 'whale', icon: '🐋', name: 'Whale', desc: 'Redeem 20 rewards', check: s => s.redeemedCount >= 20 },
+  { id: 'max_grinder', icon: '⛏️', name: 'Max Grinder', desc: 'Claim all daily activity milestones in one day', check: s => s.dailyActivityClaimed.length >= ACTIVITY_MILESTONES.length },
+  { id: 'week_grinder', icon: '🗓️', name: 'Overachiever', desc: 'Claim all weekly activity milestones in one week', check: s => (s.weeklyActivityClaimed || []).length >= WEEKLY_ACTIVITY_MILESTONES.length },
+  { id: 'early_bird', icon: '🌅', name: 'Early Bird', desc: 'Complete a daily quest before 8am', check: s => new Date().getHours() < 8 && s.dailyQuests.some(q => q.completedToday) },
+  { id: 'night_owl', icon: '🦉', name: 'Night Owl', desc: 'Grinding quests past midnight (12am–5am)', check: s => new Date().getHours() < 5 && s.completedCount >= 1 }
 ];
 
 function defaultState() {
@@ -1180,32 +1296,34 @@ function applyDefaultsAndRollover(raw) {
   }
 
   if (data.lastActiveDate !== today) {
-    let missedOnLastDay = 0;
-    data.dailyQuests.forEach(q => {
-      if (!q.completedToday) {
+    // walk each fully elapsed day since the last visit; a quest only counts as
+    // missed on days it was scheduled to be active (rest days are free)
+    let day = data.lastActiveDate;
+    let guard = 0;
+    while (day < today && guard < 60) {
+      let missedThatDay = 0;
+      data.dailyQuests.forEach(q => {
+        if (!questActiveOn(q, day)) return;
+        if (day === data.lastActiveDate && q.completedToday) return;
         q.missedCount = (q.missedCount || 0) + 1;
-        missedOnLastDay += 1;
+        missedThatDay += 1;
         if (data.freezeTokens > 0 && q.streak > 0) {
           data.freezeTokens -= 1;
           data.history.push({ name: 'Streak Freeze protected "' + q.name + '" (streak kept at ' + q.streak + ')', date: today, type: 'freeze' });
         } else { q.streak = 0; }
+      });
+      if (missedThatDay > 0) {
+        const entry = data.dayLog[day] || { done: 0, missed: 0 };
+        entry.missed += missedThatDay;
+        data.dayLog[day] = entry;
       }
-      q.completedToday = false;
-    });
-    if (missedOnLastDay > 0) {
-      const entry = data.dayLog[data.lastActiveDate] || { done: 0, missed: 0 };
-      entry.missed += missedOnLastDay;
-      data.dayLog[data.lastActiveDate] = entry;
-    }
-    // days fully skipped between last visit and today: every daily counts as missed
-    let gapDay = addDays(data.lastActiveDate, 1);
-    let guard = 0;
-    while (gapDay < today && guard < 60 && data.dailyQuests.length > 0) {
-      if (!data.dayLog[gapDay]) data.dayLog[gapDay] = { done: 0, missed: data.dailyQuests.length };
-      data.dailyQuests.forEach(q => { q.missedCount = (q.missedCount || 0) + 1; });
-      gapDay = addDays(gapDay, 1);
+      day = addDays(day, 1);
       guard += 1;
     }
+    data.dailyQuests.forEach(q => {
+      q.completedToday = false;
+      if (q.subs) q.subs.forEach(s => { s.done = false; });
+    });
     data.dailyActivityPoints = 0;
     data.dailyActivityClaimed = [];
     data.lastActiveDate = today;
@@ -1219,14 +1337,15 @@ function applyDefaultsAndRollover(raw) {
         q.missedCount = (q.missedCount || 0) + 1;
       }
       q.completedThisWeek = false;
+      if (q.subs) q.subs.forEach(s => { s.done = false; });
     });
     data.weeklyActivityPoints = 0;
     data.weeklyActivityClaimed = [];
     data.lastWeekStart = weekStart;
   }
 
-  // keep dayLog bounded to the last 60 days
-  const dayLogCutoff = addDays(today, -60);
+  // keep dayLog bounded to the last year (feeds the heatmap)
+  const dayLogCutoff = addDays(today, -371);
   for (const k in data.dayLog) { if (k < dayLogCutoff) delete data.dayLog[k]; }
 
   const seasonKey = getSeasonKey();
@@ -1304,23 +1423,102 @@ function makeQuestCard(q, kind) {
     const saveBtn = document.createElement('button'); saveBtn.className = 'add-btn'; saveBtn.textContent = 'save'; saveBtn.onclick = saveEdit;
     const cancelBtn = document.createElement('button'); cancelBtn.className = 'add-btn'; cancelBtn.textContent = 'cancel'; cancelBtn.onclick = cancelEdit;
     form.append(nameIn, catIn, ptsIn, saveBtn, cancelBtn);
+    if (kind === 'daily') {
+      const dp = document.createElement('div');
+      dp.className = 'day-picker'; dp.id = 'editDays'; dp.style.width = '100%';
+      buildDayPicker(dp, q.days);
+      form.appendChild(dp);
+    }
     card.appendChild(form);
     return card;
   }
   const done = cfg.isDone(q);
-  card.className = 'quest-card' + (done ? ' done' : '');
-  const meta = cfg.meta(q);
+  const active = kind !== 'daily' || questActiveToday(q);
+  card.className = 'quest-card' + (done ? ' done' : '') + (active ? '' : ' rest');
+  const metaParts = [];
+  const baseMeta = cfg.meta(q);
+  if (baseMeta) metaParts.push(baseMeta);
+  if (kind === 'daily' && q.days && q.days.length) metaParts.push(daysLabel(q));
+  if (!active) metaParts.push('rest day');
+  const subs = q.subs || [];
+  const doneSubs = subs.filter(s => s.done).length;
   card.innerHTML = `
-    <div class="check ${done ? 'checked' : ''}" onclick="${cfg.toggle}('${q.id}')">${done ? '✓' : ''}</div>
+    <div class="check ${done ? 'checked' : ''}" ${active ? `onclick="${cfg.toggle}('${q.id}')"` : ''}>${done ? '✓' : ''}</div>
     <div class="quest-main">
       <div class="quest-name ${done ? 'strike' : ''}">${escapeHtml(q.name)}</div>
-      ${meta ? `<div class="quest-meta"><span>${meta}</span></div>` : ''}
+      ${metaParts.length ? `<div class="quest-meta">${metaParts.map(m => '<span>' + m + '</span>').join('')}</div>` : ''}
     </div>
     <div class="pts-badge">+${q.points}</div>
+    <button class="sub-btn ${subs.length ? 'has' : ''}" onclick="toggleSubPanel('${q.id}')" title="sub-tasks">≡${subs.length ? ' ' + doneSubs + '/' + subs.length : ''}</button>
     <button class="edit-btn" onclick="startEdit('${q.id}', '${kind}')" title="edit">✎</button>
     <button class="del-btn" onclick="${cfg.remove}('${q.id}')">✕</button>
   `;
-  return card;
+  if (!expandedSubs.has(q.id)) return card;
+  const wrap = document.createElement('div');
+  wrap.appendChild(card);
+  wrap.appendChild(makeSubPanel(q, kind));
+  return wrap;
+}
+
+/* ============ SUB-TASKS ============ */
+const expandedSubs = new Set();
+
+function makeSubPanel(q, kind) {
+  const panel = document.createElement('div');
+  panel.className = 'sub-panel';
+  (q.subs || []).forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'sub-row';
+    row.innerHTML = `
+      <div class="check sub-check ${s.done ? 'checked' : ''}" onclick="toggleSub('${kind}','${q.id}','${s.id}')">${s.done ? '✓' : ''}</div>
+      <span class="sub-name ${s.done ? 'strike' : ''}">${escapeHtml(s.name)}</span>
+      <button class="del-btn" onclick="removeSub('${kind}','${q.id}','${s.id}')">✕</button>
+    `;
+    panel.appendChild(row);
+  });
+  const addRow = document.createElement('div');
+  addRow.className = 'sub-add';
+  const input = document.createElement('input');
+  input.type = 'text'; input.placeholder = 'new sub-task (e.g. genshin, hsr, zzz)'; input.id = 'subInput-' + q.id;
+  input.onkeydown = e => { if (e.key === 'Enter') addSub(kind, q.id); };
+  const btn = document.createElement('button');
+  btn.className = 'add-btn'; btn.textContent = '+';
+  btn.onclick = () => addSub(kind, q.id);
+  addRow.append(input, btn);
+  panel.appendChild(addRow);
+  return panel;
+}
+
+function findQuest(kind, id) { return KIND_CFG[kind].arr().find(x => x.id === id); }
+function toggleSubPanel(id) {
+  if (expandedSubs.has(id)) expandedSubs.delete(id); else expandedSubs.add(id);
+  render();
+}
+function addSub(kind, qid) {
+  const q = findQuest(kind, qid);
+  const input = document.getElementById('subInput-' + qid);
+  const name = input ? input.value.trim() : '';
+  if (!q || !name) return;
+  (q.subs = q.subs || []).push({ id: uid(), name, done: false });
+  saveData();
+  render();
+  const again = document.getElementById('subInput-' + qid);
+  if (again) again.focus();
+}
+function toggleSub(kind, qid, sid) {
+  const q = findQuest(kind, qid);
+  const s = q && (q.subs || []).find(x => x.id === sid);
+  if (!s) return;
+  s.done = !s.done;
+  saveData();
+  render();
+}
+function removeSub(kind, qid, sid) {
+  const q = findQuest(kind, qid);
+  if (!q) return;
+  q.subs = (q.subs || []).filter(x => x.id !== sid);
+  saveData();
+  render();
 }
 
 function renderQuestList(listEl, quests, kind, emptyText) {
@@ -1367,6 +1565,7 @@ function saveEdit() {
     if (name) q.name = name;
     if (pts > 0) q.points = pts;
     q.category = document.getElementById('editCat').value.trim();
+    if (editing.kind === 'daily') q.days = readDayPicker(document.getElementById('editDays'));
   }
   editing = null;
   afterAction();
@@ -1653,6 +1852,32 @@ function renderStatistics() {
     chart.appendChild(col);
   });
 
+  // past-year heatmap: 52 week columns, Mon-Sun rows, newest on the right
+  const hm = document.getElementById('heatmap');
+  hm.innerHTML = '';
+  const hmStart = addDays(getWeekStart(), -51 * 7);
+  for (let w = 0; w < 52; w++) {
+    const col = document.createElement('div');
+    col.className = 'hm-col';
+    for (let d = 0; d < 7; d++) {
+      const day = addDays(hmStart, w * 7 + d);
+      if (day > today) break;
+      const e = state.dayLog[day];
+      const done = e ? e.done : 0;
+      const missed = e ? e.missed : 0;
+      let lvl = 0;
+      if (done >= 6) lvl = 4; else if (done >= 4) lvl = 3; else if (done >= 2) lvl = 2; else if (done >= 1) lvl = 1;
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell h' + lvl + (done === 0 && missed > 0 ? ' hm-miss' : '');
+      cell.title = day + ': ' + done + ' done' + (missed ? ', ' + missed + ' missed' : '');
+      col.appendChild(cell);
+    }
+    hm.appendChild(col);
+  }
+  if (hm.parentElement && typeof hm.parentElement.scrollWidth === 'number') {
+    hm.parentElement.scrollLeft = hm.parentElement.scrollWidth;
+  }
+
   // per-quest report
   const report = document.getElementById('questReport');
   report.innerHTML = '';
@@ -1717,15 +1942,17 @@ function addDaily() {
   const name = nameEl.value.trim();
   const pts = parseInt(ptsEl.value) || 10;
   if (!name) return;
-  state.dailyQuests.push({ id: uid(), name, points: pts, category: catEl.value.trim(), streak: 0, completedToday: false, doneCount: 0, missedCount: 0 });
+  const daysEl = document.getElementById('dailyDays');
+  state.dailyQuests.push({ id: uid(), name, points: pts, category: catEl.value.trim(), days: readDayPicker(daysEl), streak: 0, completedToday: false, doneCount: 0, missedCount: 0 });
   nameEl.value = '';
   catEl.value = '';
+  buildDayPicker(daysEl, []);
   afterAction();
   closeAddForm('dailyPanel');
 }
 function toggleDaily(id) {
   const q = state.dailyQuests.find(x => x.id === id);
-  if (!q) return;
+  if (!q || !questActiveToday(q)) return;
   if (q.completedToday) {
     q.completedToday = false;
     q.streak = Math.max(0, q.streak - 1);
@@ -1992,6 +2219,7 @@ async function selectProfile(name) {
   } catch (e) { /* fall back to empty state */ }
   state = applyDefaultsAndRollover(raw);
   await saveData();
+  try { localStorage.setItem('questLogProfile', name); } catch (e) {}
 
   document.getElementById('profileGate').classList.add('hidden');
   document.getElementById('appRoot').classList.remove('hidden');
@@ -2006,6 +2234,7 @@ function switchProfile() {
   currentProfile = null;
   state = null;
   editing = null;
+  try { localStorage.removeItem('questLogProfile'); } catch (e) {}
   document.getElementById('appRoot').classList.add('hidden');
   document.getElementById('profileGate').classList.remove('hidden');
   initProfileGate();
@@ -2036,8 +2265,45 @@ document.getElementById('newProfileName').addEventListener('keydown', (e) => {
 });
 
 /* ============ INIT ============ */
+// PWA: works fully over https or localhost; over plain http (Tailscale IP)
+// registration silently no-ops but add-to-home-screen still works.
+if ('serviceWorker' in navigator) {
+  try { navigator.serviceWorker.register('/sw.js').catch(() => {}); } catch (e) {}
+}
 checkAutoTheme(); // theme the profile gate too, not just the app
-initProfileGate();
+buildDayPicker(document.getElementById('dailyDays'), []);
+
+document.getElementById('importFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file || !currentProfile) return;
+  try {
+    const text = await file.text();
+    const obj = JSON.parse(text);
+    const looksValid = obj && typeof obj === 'object' && !Array.isArray(obj) &&
+      (Array.isArray(obj.dailyQuests) || typeof obj.points === 'number');
+    if (!looksValid) { alert('That file does not look like a quest log export.'); return; }
+    if (!confirm('Replace ALL data for "' + currentProfile + '" with this file? The server keeps 7 daily backups, but this cannot be undone from the app.')) return;
+    state = applyDefaultsAndRollover(obj);
+    await saveData();
+    render();
+    initNotepad();
+  } catch (err) {
+    alert('Could not import: ' + (err.message || 'invalid file'));
+  }
+});
+
+(async () => {
+  // resume last profile on refresh instead of showing the gate every time
+  let saved = null;
+  try { saved = localStorage.getItem('questLogProfile'); } catch (e) {}
+  if (saved) {
+    const profiles = await fetchProfiles();
+    if (profiles.includes(saved)) { selectProfile(saved); return; }
+    try { localStorage.removeItem('questLogProfile'); } catch (e) {}
+  }
+  initProfileGate();
+})();
 </script>
 </body>
 </html>
