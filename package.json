@@ -1,0 +1,10 @@
+{
+  "name": "quest-log-server",
+  "version": "1.0.0",
+  "description": "Self-hosted quest log with per-profile persistent data, meant to be run on a machine on your Tailscale network.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
