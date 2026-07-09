@@ -153,7 +153,18 @@ body.theme-fog .quote-banner .quote-mark { color: #5d6d7e; }
 .quote-banner-refresh:hover { opacity: 0.9; color: var(--warm); }
 
 .widgets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 28px; align-items: stretch; }
-@media (max-width: 768px) { .widgets { grid-template-columns: 1fr; } }
+/* mobile: compact strip instead of three stacked cards blocking the view */
+@media (max-width: 768px) {
+  .widgets { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
+  .widget { min-height: 0; padding: 10px 10px; border-radius: 12px; }
+  .widget-label { margin-bottom: 5px; font-size: 8.5px; letter-spacing: 0.08em; }
+  .big-stat { font-size: 17px; }
+  .big-stat-sub { display: none; }
+  .rank-badge { display: none; }
+  .rank-name { font-size: 12px; }
+  .xp-bar-bg { margin-top: 5px; height: 4px; }
+  .xp-text { font-size: 8px; margin-top: 3px; }
+}
 
 .widget {
   background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.06);
@@ -242,6 +253,23 @@ body.theme-fog .pts-badge { background: rgba(0,0,0,0.06); border-color: rgba(0,0
 
 .del-btn { background: none; border: none; color: inherit; opacity: 0.35; font-size: 15px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
 .del-btn:hover { opacity: 0.9; color: #e08a7a; }
+
+.edit-btn { background: none; border: none; color: inherit; opacity: 0.35; font-size: 13px; cursor: pointer; padding: 2px 4px; flex-shrink: 0; }
+.edit-btn:hover { opacity: 0.9; color: var(--warm); }
+body.theme-fog .edit-btn:hover { color: #5d6d7e; }
+
+.cat-header {
+  display: flex; align-items: center; gap: 8px; padding: 8px 14px; cursor: pointer; user-select: none;
+  background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 10px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; transition: all 0.2s ease;
+}
+.cat-header:hover { opacity: 1; border-color: rgba(232, 184, 109, 0.25); }
+body.theme-fog .cat-header { background: rgba(255, 255, 255, 0.3); border-color: rgba(0, 0, 0, 0.06); color: #2c3e50; }
+.cat-chevron { color: var(--warm); font-size: 10px; flex-shrink: 0; }
+body.theme-fog .cat-chevron { color: #5d6d7e; }
+.cat-count { margin-left: auto; opacity: 0.6; font-size: 10px; font-family: var(--pixel); flex-shrink: 0; }
+.cat-header.all-done .cat-count { color: var(--warm); opacity: 1; }
+body.theme-fog .cat-header.all-done .cat-count { color: #5d6d7e; }
 
 .add-form-panel {
   background: rgba(232, 184, 109, 0.04); border: 1px dashed rgba(232, 184, 109, 0.25);
@@ -530,6 +558,10 @@ body.theme-fog .profile-card h2 { color: #5d6d7e; }
   cursor: pointer; text-align: left; transition: all .2s ease;
 }
 .profile-btn:hover { background: rgba(232,184,109,0.16); border-color: rgba(232,184,109,0.4); }
+body.theme-fog .profile-btn { background: rgba(93,109,126,0.08); border-color: rgba(93,109,126,0.25); }
+body.theme-fog .profile-btn:hover { background: rgba(93,109,126,0.16); border-color: rgba(93,109,126,0.45); }
+body.theme-fog .profile-new input { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.12); color: #2c3e50; }
+body.theme-fog .profile-new .add-btn { background: rgba(0,0,0,0.08); border-color: rgba(0,0,0,0.15); color: #5d6d7e; }
 .profile-new { display: flex; gap: 8px; }
 .profile-new input {
   flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
@@ -652,6 +684,7 @@ body.theme-fog .profile-card h2 { color: #5d6d7e; }
     <div class="add-form-panel hidden" id="dailyPanel">
       <div class="add-form">
         <input type="text" name="name" id="dailyName" placeholder="new daily quest (e.g. read 20 min)">
+        <input type="text" name="cat" id="dailyCat" placeholder="category (optional)" list="catList" style="width:150px;">
         <input type="number" name="pts" id="dailyPts" placeholder="pts" value="20" min="1">
         <button class="add-btn" onclick="addDaily()">+ add</button>
       </div>
@@ -664,6 +697,7 @@ body.theme-fog .profile-card h2 { color: #5d6d7e; }
     <div class="add-form-panel hidden" id="weeklyPanel">
       <div class="add-form">
         <input type="text" name="name" id="weeklyName" placeholder="new weekly quest (e.g. deep-clean the room)">
+        <input type="text" name="cat" id="weeklyCat" placeholder="category (optional)" list="catList" style="width:150px;">
         <input type="number" name="pts" id="weeklyPts" placeholder="pts" value="60" min="1">
         <button class="add-btn" onclick="addWeekly()">+ add</button>
       </div>
@@ -676,6 +710,7 @@ body.theme-fog .profile-card h2 { color: #5d6d7e; }
     <div class="add-form-panel hidden" id="goalPanel">
       <div class="add-form">
         <input type="text" name="name" id="goalName" placeholder="new goal (e.g. finish project draft)">
+        <input type="text" name="cat" id="goalCat" placeholder="category (optional)" list="catList" style="width:150px;">
         <input type="number" name="pts" id="goalPts" placeholder="pts" value="50" min="1">
         <button class="add-btn" onclick="addGoal()">+ add</button>
       </div>
@@ -771,7 +806,15 @@ body.theme-fog .profile-card h2 { color: #5d6d7e; }
 
     <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
     <div class="card-list" id="questReport"></div>
+
+    <div class="section-title">data</div>
+    <div class="widget" style="display:block;">
+      <button class="add-btn" onclick="exportData()">⬇ export profile data (.json)</button>
+      <div class="info-note" style="margin-top:10px;">downloads all quests, points, stats, history and settings for the current profile as a JSON file.</div>
+    </div>
   </div>
+
+  <datalist id="catList"></datalist>
 
   <footer>
     <div class="footer-left">
@@ -1066,7 +1109,7 @@ function defaultState() {
     dailyQuests: [], weeklyQuests: [], goals: [], rewards: [], history: [], quotes: [],
     notes: '',
     bestStreak: 0, completedCount: 0, redeemedCount: 0,
-    dayLog: {},
+    dayLog: {}, collapsedCats: {},
     lastActiveDate: today, lastWeekStart: getWeekStart(),
     lastLoginDate: null, loginStreak: 0, loginHistory: [],
     freezeTokens: 0, freezeEarnedTotal: 0,
@@ -1203,6 +1246,123 @@ function escapeHtml(str) {
 
 function addSeasonXp(amount) { state.seasonXp = Math.max(0, state.seasonXp + amount); }
 
+/* ============ QUEST CARDS / CATEGORIES / EDITING ============ */
+let editing = null; // { id, kind } — kind: daily | weekly | goal | reward
+
+const KIND_CFG = {
+  daily:  { arr: () => state.dailyQuests,  isDone: q => q.completedToday,    toggle: 'toggleDaily',  remove: 'removeDaily',  meta: q => 'streak ' + q.streak },
+  weekly: { arr: () => state.weeklyQuests, isDone: q => q.completedThisWeek, toggle: 'toggleWeekly', remove: 'removeWeekly', meta: q => q.weekStreak + ' week streak' },
+  goal:   { arr: () => state.goals,        isDone: q => q.completed,         toggle: 'toggleGoal',   remove: 'removeGoal',   meta: () => '' }
+};
+
+function makeQuestCard(q, kind) {
+  const cfg = KIND_CFG[kind];
+  const card = document.createElement('div');
+  if (editing && editing.id === q.id && editing.kind === kind) {
+    card.className = 'quest-card';
+    const form = document.createElement('div');
+    form.className = 'add-form';
+    form.style.flex = '1';
+    const nameIn = document.createElement('input');
+    nameIn.type = 'text'; nameIn.id = 'editName'; nameIn.value = q.name; nameIn.style.flex = '1'; nameIn.style.minWidth = '140px';
+    const catIn = document.createElement('input');
+    catIn.type = 'text'; catIn.id = 'editCat'; catIn.value = q.category || ''; catIn.placeholder = 'category'; catIn.setAttribute('list', 'catList'); catIn.style.width = '130px';
+    const ptsIn = document.createElement('input');
+    ptsIn.type = 'number'; ptsIn.id = 'editPts'; ptsIn.value = q.points; ptsIn.min = '1'; ptsIn.style.width = '70px';
+    const saveBtn = document.createElement('button'); saveBtn.className = 'add-btn'; saveBtn.textContent = 'save'; saveBtn.onclick = saveEdit;
+    const cancelBtn = document.createElement('button'); cancelBtn.className = 'add-btn'; cancelBtn.textContent = 'cancel'; cancelBtn.onclick = cancelEdit;
+    form.append(nameIn, catIn, ptsIn, saveBtn, cancelBtn);
+    card.appendChild(form);
+    return card;
+  }
+  const done = cfg.isDone(q);
+  card.className = 'quest-card' + (done ? ' done' : '');
+  const meta = cfg.meta(q);
+  card.innerHTML = `
+    <div class="check ${done ? 'checked' : ''}" onclick="${cfg.toggle}('${q.id}')">${done ? '✓' : ''}</div>
+    <div class="quest-main">
+      <div class="quest-name ${done ? 'strike' : ''}">${escapeHtml(q.name)}</div>
+      ${meta ? `<div class="quest-meta"><span>${meta}</span></div>` : ''}
+    </div>
+    <div class="pts-badge">+${q.points}</div>
+    <button class="edit-btn" onclick="startEdit('${q.id}', '${kind}')" title="edit">✎</button>
+    <button class="del-btn" onclick="${cfg.remove}('${q.id}')">✕</button>
+  `;
+  return card;
+}
+
+function renderQuestList(listEl, quests, kind, emptyText) {
+  listEl.innerHTML = '';
+  if (quests.length === 0) { listEl.innerHTML = '<div class="empty-state">' + emptyText + '</div>'; return; }
+  const cfg = KIND_CFG[kind];
+  const uncategorized = quests.filter(q => !q.category);
+  const byCat = {};
+  quests.forEach(q => { if (q.category) (byCat[q.category] = byCat[q.category] || []).push(q); });
+
+  uncategorized.forEach(q => listEl.appendChild(makeQuestCard(q, kind)));
+  Object.keys(byCat).sort().forEach(cat => {
+    const items = byCat[cat];
+    const key = kind + ':' + cat;
+    const collapsed = !!state.collapsedCats[key];
+    const doneCount = items.filter(q => cfg.isDone(q)).length;
+    const header = document.createElement('div');
+    header.className = 'cat-header' + (doneCount === items.length ? ' all-done' : '');
+    header.innerHTML = `
+      <span class="cat-chevron">${collapsed ? '▸' : '▾'}</span>
+      <span class="cat-name">${escapeHtml(cat)}</span>
+      <span class="cat-count">${doneCount}/${items.length}</span>
+    `;
+    header.onclick = () => {
+      if (collapsed) delete state.collapsedCats[key];
+      else state.collapsedCats[key] = true;
+      saveData();
+      render();
+    };
+    listEl.appendChild(header);
+    if (!collapsed) items.forEach(q => listEl.appendChild(makeQuestCard(q, kind)));
+  });
+}
+
+function startEdit(id, kind) { editing = { id, kind }; render(); }
+function cancelEdit() { editing = null; render(); }
+function saveEdit() {
+  if (!editing) return;
+  if (editing.kind === 'reward') return saveRewardEdit();
+  const q = KIND_CFG[editing.kind].arr().find(x => x.id === editing.id);
+  if (q) {
+    const name = document.getElementById('editName').value.trim();
+    const pts = parseInt(document.getElementById('editPts').value);
+    if (name) q.name = name;
+    if (pts > 0) q.points = pts;
+    q.category = document.getElementById('editCat').value.trim();
+  }
+  editing = null;
+  afterAction();
+}
+function saveRewardEdit() {
+  const r = state.rewards.find(x => x.id === editing.id);
+  if (r) {
+    const name = document.getElementById('editName').value.trim();
+    const cost = parseInt(document.getElementById('editCost').value);
+    if (name) r.name = name;
+    if (cost > 0) r.cost = cost;
+    r.rarity = document.getElementById('editRarity').value;
+  }
+  editing = null;
+  afterAction();
+}
+function startRewardEdit(id) { editing = { id, kind: 'reward' }; render(); }
+
+function exportData() {
+  if (!state || !currentProfile) return;
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'quest-log-' + currentProfile + '-' + todayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 let quoteBannerOffset = 0;
 function renderQuoteBanner() {
   const textEl = document.getElementById('quoteBannerText');
@@ -1265,55 +1425,19 @@ function render() {
   });
   updateResetCountdown();
 
-  const dailyList = document.getElementById('dailyList');
-  dailyList.innerHTML = '';
-  if (state.dailyQuests.length === 0) dailyList.innerHTML = '<div class="empty-state">no daily quests yet — add one below.</div>';
-  state.dailyQuests.forEach(q => {
-    const card = document.createElement('div');
-    card.className = 'quest-card' + (q.completedToday ? ' done' : '');
-    card.innerHTML = `
-      <div class="check ${q.completedToday ? 'checked' : ''}" onclick="toggleDaily('${q.id}')">${q.completedToday ? '✓' : ''}</div>
-      <div class="quest-main">
-        <div class="quest-name ${q.completedToday ? 'strike' : ''}">${escapeHtml(q.name)}</div>
-        <div class="quest-meta"><span>streak ${q.streak}</span></div>
-      </div>
-      <div class="pts-badge">+${q.points}</div>
-      <button class="del-btn" onclick="removeDaily('${q.id}')">✕</button>
-    `;
-    dailyList.appendChild(card);
-  });
+  renderQuestList(document.getElementById('dailyList'), state.dailyQuests, 'daily', 'no daily quests yet — add one below.');
+  renderQuestList(document.getElementById('weeklyList'), state.weeklyQuests, 'weekly', 'no weekly quests yet — add one below.');
+  renderQuestList(document.getElementById('goalList'), state.goals, 'goal', 'no goals yet — add one below.');
 
-  const weeklyList = document.getElementById('weeklyList');
-  weeklyList.innerHTML = '';
-  if (state.weeklyQuests.length === 0) weeklyList.innerHTML = '<div class="empty-state">no weekly quests yet — add one below.</div>';
-  state.weeklyQuests.forEach(q => {
-    const card = document.createElement('div');
-    card.className = 'quest-card' + (q.completedThisWeek ? ' done' : '');
-    card.innerHTML = `
-      <div class="check ${q.completedThisWeek ? 'checked' : ''}" onclick="toggleWeekly('${q.id}')">${q.completedThisWeek ? '✓' : ''}</div>
-      <div class="quest-main">
-        <div class="quest-name ${q.completedThisWeek ? 'strike' : ''}">${escapeHtml(q.name)}</div>
-        <div class="quest-meta"><span>${q.weekStreak} week streak</span></div>
-      </div>
-      <div class="pts-badge">+${q.points}</div>
-      <button class="del-btn" onclick="removeWeekly('${q.id}')">✕</button>
-    `;
-    weeklyList.appendChild(card);
-  });
-
-  const goalList = document.getElementById('goalList');
-  goalList.innerHTML = '';
-  if (state.goals.length === 0) goalList.innerHTML = '<div class="empty-state">no goals yet — add one below.</div>';
-  state.goals.forEach(g => {
-    const card = document.createElement('div');
-    card.className = 'quest-card' + (g.completed ? ' done' : '');
-    card.innerHTML = `
-      <div class="check ${g.completed ? 'checked' : ''}" onclick="toggleGoal('${g.id}')">${g.completed ? '✓' : ''}</div>
-      <div class="quest-main"><div class="quest-name ${g.completed ? 'strike' : ''}">${escapeHtml(g.name)}</div></div>
-      <div class="pts-badge">+${g.points}</div>
-      <button class="del-btn" onclick="removeGoal('${g.id}')">✕</button>
-    `;
-    goalList.appendChild(card);
+  // category suggestions for add/edit forms
+  const catSet = new Set();
+  [...state.dailyQuests, ...state.weeklyQuests, ...state.goals].forEach(q => { if (q.category) catSet.add(q.category); });
+  const catListEl = document.getElementById('catList');
+  catListEl.innerHTML = '';
+  [...catSet].sort().forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    catListEl.appendChild(opt);
   });
 
   const rewardList = document.getElementById('rewardList');
@@ -1322,6 +1446,29 @@ function render() {
   state.rewards.forEach(r => {
     const card = document.createElement('div');
     card.className = 'reward-card';
+    if (editing && editing.kind === 'reward' && editing.id === r.id) {
+      const form = document.createElement('div');
+      form.className = 'add-form';
+      form.style.flex = '1';
+      const nameIn = document.createElement('input');
+      nameIn.type = 'text'; nameIn.id = 'editName'; nameIn.value = r.name; nameIn.style.flex = '1'; nameIn.style.minWidth = '140px';
+      const raritySel = document.createElement('select');
+      raritySel.id = 'editRarity';
+      ['common', 'rare', 'epic', 'legendary'].forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        if ((r.rarity || 'common') === v) opt.selected = true;
+        raritySel.appendChild(opt);
+      });
+      const costIn = document.createElement('input');
+      costIn.type = 'number'; costIn.id = 'editCost'; costIn.value = r.cost; costIn.min = '1'; costIn.style.width = '80px';
+      const saveBtn = document.createElement('button'); saveBtn.className = 'add-btn'; saveBtn.textContent = 'save'; saveBtn.onclick = saveEdit;
+      const cancelBtn = document.createElement('button'); cancelBtn.className = 'add-btn'; cancelBtn.textContent = 'cancel'; cancelBtn.onclick = cancelEdit;
+      form.append(nameIn, raritySel, costIn, saveBtn, cancelBtn);
+      card.appendChild(form);
+      rewardList.appendChild(card);
+      return;
+    }
     const rarity = r.rarity || 'common';
     card.innerHTML = `
       <div class="reward-left">
@@ -1334,6 +1481,7 @@ function render() {
       <div style="display:flex; gap:6px; align-items:center;">
         <button class="pin-btn ${r.id === state.pinnedRewardId ? 'pinned' : ''}" onclick="togglePinReward('${r.id}')" title="pin as savings goal">★</button>
         <button class="redeem-btn" ${state.points < r.cost ? 'disabled' : ''} onclick="redeem('${r.id}')">redeem</button>
+        <button class="edit-btn" onclick="startRewardEdit('${r.id}')" title="edit">✎</button>
         <button class="del-btn" onclick="removeReward('${r.id}')">✕</button>
       </div>
     `;
@@ -1537,11 +1685,13 @@ function afterAction() {
 function addDaily() {
   const nameEl = document.getElementById('dailyName');
   const ptsEl = document.getElementById('dailyPts');
+  const catEl = document.getElementById('dailyCat');
   const name = nameEl.value.trim();
   const pts = parseInt(ptsEl.value) || 10;
   if (!name) return;
-  state.dailyQuests.push({ id: uid(), name, points: pts, streak: 0, completedToday: false, doneCount: 0, missedCount: 0 });
+  state.dailyQuests.push({ id: uid(), name, points: pts, category: catEl.value.trim(), streak: 0, completedToday: false, doneCount: 0, missedCount: 0 });
   nameEl.value = '';
+  catEl.value = '';
   afterAction();
   closeAddForm('dailyPanel');
 }
@@ -1578,11 +1728,13 @@ function removeDaily(id) { state.dailyQuests = state.dailyQuests.filter(x => x.i
 function addWeekly() {
   const nameEl = document.getElementById('weeklyName');
   const ptsEl = document.getElementById('weeklyPts');
+  const catEl = document.getElementById('weeklyCat');
   const name = nameEl.value.trim();
   const pts = parseInt(ptsEl.value) || 40;
   if (!name) return;
-  state.weeklyQuests.push({ id: uid(), name, points: pts, weekStreak: 0, completedThisWeek: false, doneCount: 0, missedCount: 0 });
+  state.weeklyQuests.push({ id: uid(), name, points: pts, category: catEl.value.trim(), weekStreak: 0, completedThisWeek: false, doneCount: 0, missedCount: 0 });
   nameEl.value = '';
+  catEl.value = '';
   afterAction();
   closeAddForm('weeklyPanel');
 }
@@ -1611,11 +1763,13 @@ function removeWeekly(id) { state.weeklyQuests = state.weeklyQuests.filter(x => 
 function addGoal() {
   const nameEl = document.getElementById('goalName');
   const ptsEl = document.getElementById('goalPts');
+  const catEl = document.getElementById('goalCat');
   const name = nameEl.value.trim();
   const pts = parseInt(ptsEl.value) || 20;
   if (!name) return;
-  state.goals.push({ id: uid(), name, points: pts, completed: false });
+  state.goals.push({ id: uid(), name, points: pts, category: catEl.value.trim(), completed: false });
   nameEl.value = '';
+  catEl.value = '';
   afterAction();
   closeAddForm('goalPanel');
 }
@@ -1780,6 +1934,7 @@ async function selectProfile(name) {
 function switchProfile() {
   currentProfile = null;
   state = null;
+  editing = null;
   document.getElementById('appRoot').classList.add('hidden');
   document.getElementById('profileGate').classList.remove('hidden');
   initProfileGate();
@@ -1810,6 +1965,7 @@ document.getElementById('newProfileName').addEventListener('keydown', (e) => {
 });
 
 /* ============ INIT ============ */
+checkAutoTheme(); // theme the profile gate too, not just the app
 initProfileGate();
 </script>
 </body>
