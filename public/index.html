@@ -1139,6 +1139,7 @@ function toggleSound() {
 /* ============ QUEST APP STATE / LOGIC ============ */
 let currentProfile = null;
 let state = null;
+let pendingAutoCollect = null; // { total, parts } — set by applyDefaultsAndRollover, shown once after login
 
 function todayStr(d) {
   d = d || new Date();
@@ -1277,6 +1278,7 @@ const WEEKLY_ACTIVITY_MILESTONES = [
 // brand new profile) and fills in defaults + runs the same daily/weekly/
 // season rollover logic that used to run against localStorage.
 function applyDefaultsAndRollover(raw) {
+  pendingAutoCollect = null;
   let data = raw;
   if (!data || typeof data !== 'object' || Array.isArray(data)) data = {};
   const d = defaultState();
@@ -1324,6 +1326,25 @@ function applyDefaultsAndRollover(raw) {
       q.completedToday = false;
       if (q.subs) q.subs.forEach(s => { s.done = false; });
     });
+
+    // auto-collect any daily activity milestones that were earned but never
+    // claimed before the day rolls over and the progress bar resets to 0
+    let autoDailyReward = 0;
+    ACTIVITY_MILESTONES.forEach(m => {
+      if (data.dailyActivityPoints >= m.pts && !data.dailyActivityClaimed.includes(m.pts)) {
+        autoDailyReward += m.reward;
+      }
+    });
+    if (autoDailyReward > 0) {
+      data.points += autoDailyReward;
+      data.lifetimePoints += autoDailyReward;
+      data.seasonXp = Math.max(0, data.seasonXp + autoDailyReward);
+      data.history.push({ name: 'Auto-collected daily activity reward (+' + autoDailyReward + ')', date: today, type: 'activity' });
+      if (!pendingAutoCollect) pendingAutoCollect = { total: 0, parts: [] };
+      pendingAutoCollect.total += autoDailyReward;
+      pendingAutoCollect.parts.push('daily activity (+' + autoDailyReward + ')');
+    }
+
     data.dailyActivityPoints = 0;
     data.dailyActivityClaimed = [];
     data.lastActiveDate = today;
@@ -1339,6 +1360,24 @@ function applyDefaultsAndRollover(raw) {
       q.completedThisWeek = false;
       if (q.subs) q.subs.forEach(s => { s.done = false; });
     });
+
+    // same auto-collect for weekly activity milestones before they reset
+    let autoWeeklyReward = 0;
+    WEEKLY_ACTIVITY_MILESTONES.forEach(m => {
+      if (data.weeklyActivityPoints >= m.pts && !data.weeklyActivityClaimed.includes(m.pts)) {
+        autoWeeklyReward += m.reward;
+      }
+    });
+    if (autoWeeklyReward > 0) {
+      data.points += autoWeeklyReward;
+      data.lifetimePoints += autoWeeklyReward;
+      data.seasonXp = Math.max(0, data.seasonXp + autoWeeklyReward);
+      data.history.push({ name: 'Auto-collected weekly activity reward (+' + autoWeeklyReward + ')', date: today, type: 'activity' });
+      if (!pendingAutoCollect) pendingAutoCollect = { total: 0, parts: [] };
+      pendingAutoCollect.total += autoWeeklyReward;
+      pendingAutoCollect.parts.push('weekly activity (+' + autoWeeklyReward + ')');
+    }
+
     data.weeklyActivityPoints = 0;
     data.weeklyActivityClaimed = [];
     data.lastWeekStart = weekStart;
@@ -2228,6 +2267,16 @@ async function selectProfile(name) {
   render();
   initNotepad();
   checkAutoTheme();
+  showAutoCollectToast();
+}
+
+function showAutoCollectToast() {
+  if (!pendingAutoCollect || pendingAutoCollect.total <= 0) return;
+  document.getElementById('revealIcon').textContent = '🌙';
+  document.getElementById('revealTitle').textContent = 'Auto-Collected While Away';
+  document.getElementById('revealName').textContent = '+' + pendingAutoCollect.total + ' points — ' + pendingAutoCollect.parts.join(', ');
+  document.getElementById('overlay').classList.add('show');
+  pendingAutoCollect = null;
 }
 
 function switchProfile() {
@@ -2288,6 +2337,7 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
     await saveData();
     render();
     initNotepad();
+    showAutoCollectToast();
   } catch (err) {
     alert('Could not import: ' + (err.message || 'invalid file'));
   }
