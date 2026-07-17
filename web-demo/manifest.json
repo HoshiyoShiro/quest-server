@@ -1,0 +1,13 @@
+{
+  "name": "quest log (demo)",
+  "short_name": "quest log",
+  "description": "Gamified quest log demo — dailies, weeklies, rewards. Data stays in your browser only.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#131009",
+  "theme_color": "#131009",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
