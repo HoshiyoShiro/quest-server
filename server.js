@@ -26,6 +26,39 @@ function backupProfile(name) {
   while (old.length > BACKUP_KEEP) fs.unlinkSync(path.join(dir, old.shift()));
 }
 
+// Guards against a client saving a freshly-initialized/empty state over real
+// data — this happens if a client loses its profile data (e.g. a failed
+// fetch while the server was briefly down) and falls back to defaults
+// locally, then autosaves that blank state once the connection returns.
+// Returns null if the incoming state looks fine, or a reason string if it
+// looks like it would wipe out existing content.
+function detectSuspiciousWipe(existing, incoming) {
+  if (!existing) return null; // no prior data — nothing to lose
+  const itemCount = s => (s.dailyQuests?.length || 0) + (s.weeklyQuests?.length || 0) +
+    (s.goals?.length || 0) + (s.rewards?.length || 0);
+  const existingCount = itemCount(existing);
+  const incomingCount = itemCount(incoming || {});
+  const existingLifetime = existing.lifetimePoints || 0;
+  const incomingLifetime = (incoming && incoming.lifetimePoints) || 0;
+
+  if (existingCount >= 3 && incomingCount === 0) {
+    return `existing profile has ${existingCount} quests/goals/rewards, incoming save has 0`;
+  }
+  if (existingLifetime >= 50 && incomingLifetime < existingLifetime * 0.3) {
+    return `existing lifetimePoints ${existingLifetime} would drop to ${incomingLifetime}`;
+  }
+  return null;
+}
+
+// Stash a rejected save next to the backups so nothing is silently lost,
+// even the bogus payload — useful for debugging what the client sent.
+function quarantineRejectedSave(name, body) {
+  const dir = path.join(DATA_DIR, '_backups', name);
+  fs.mkdirSync(dir, { recursive: true });
+  const dest = path.join(dir, 'REJECTED-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json');
+  fs.writeFileSync(dest, JSON.stringify(body ?? {}), 'utf8');
+}
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -119,6 +152,21 @@ const server = http.createServer(async (req, res) => {
 
       if (p.startsWith('/api/state/') && req.method === 'PUT') {
         const body = await readBody(req);
+
+        let existing = null;
+        if (fs.existsSync(file)) {
+          try { existing = JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { existing = null; }
+        }
+        const wipeReason = detectSuspiciousWipe(existing, body);
+        if (wipeReason && url.searchParams.get('force') !== '1') {
+          console.error(`Refused save for "${name}": ${wipeReason}`);
+          try { quarantineRejectedSave(name, body); } catch (e) { console.error('Quarantine failed:', e.message); }
+          return sendJson(res, 409, {
+            error: 'Refused to save — this looks like it would wipe existing data (' + wipeReason + '). ' +
+              'Reload the app to pull your real saved data back down. If this wipe is actually intentional, retry the request with ?force=1.'
+          });
+        }
+
         try { backupProfile(name); } catch (e) { console.error('Backup failed for ' + name + ':', e.message); }
         fs.writeFileSync(file, JSON.stringify(body ?? {}), 'utf8');
         return sendJson(res, 200, { ok: true });

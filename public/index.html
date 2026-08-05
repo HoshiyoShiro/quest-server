@@ -1240,8 +1240,14 @@ let currentProfile = null;
 let state = null;
 let pendingAutoCollect = null; // { total, parts } — set by applyDefaultsAndRollover, shown once after login
 
+const DAY_RESET_HOUR = 4; // quests roll over at 4am, not midnight, to match gacha daily reset times
+function shiftedNow() {
+  const d = new Date();
+  d.setHours(d.getHours() - DAY_RESET_HOUR);
+  return d;
+}
 function todayStr(d) {
-  d = d || new Date();
+  d = d || shiftedNow();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function addDays(dateStr, n) {
@@ -1250,7 +1256,7 @@ function addDays(dateStr, n) {
   return todayStr(d);
 }
 function getWeekStart(d) {
-  d = d || new Date();
+  d = d || shiftedNow();
   const date = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const day = date.getDay();
   const diff = (day === 0 ? -6 : 1 - day);
@@ -1388,7 +1394,12 @@ function applyDefaultsAndRollover(raw) {
   const d = defaultState();
   for (const k in d) if (!(k in data)) data[k] = d[k];
 
-  const today = todayStr();
+  // never let the computed "today" move earlier than what's already recorded —
+  // guards against the daily cutoff moving (e.g. midnight -> 4am) while a date
+  // is already stamped past that boundary, and against clock skew in general
+  let today = todayStr();
+  if (data.lastActiveDate && today < data.lastActiveDate) today = data.lastActiveDate;
+  if (data.lastLoginDate && today < data.lastLoginDate) today = data.lastLoginDate;
 
   if (data.lastLoginDate !== today) {
     if (data.lastLoginDate === addDays(today, -1)) data.loginStreak += 1;
@@ -1454,7 +1465,8 @@ function applyDefaultsAndRollover(raw) {
     data.lastActiveDate = today;
   }
 
-  const weekStart = getWeekStart();
+  let weekStart = getWeekStart();
+  if (data.lastWeekStart && weekStart < data.lastWeekStart) weekStart = data.lastWeekStart;
   if (data.lastWeekStart !== weekStart) {
     data.weeklyQuests.forEach(q => {
       if (!q.completedThisWeek) {
@@ -2398,14 +2410,16 @@ function claimActivityMilestone(pts) {
 
 function updateResetCountdown() {
   const now = new Date();
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
-  const msLeft = midnight - now;
+  let nextReset = new Date(now.getFullYear(), now.getMonth(), now.getDate(), DAY_RESET_HOUR, 0, 0);
+  if (nextReset <= now) nextReset.setDate(nextReset.getDate() + 1);
+  const msLeft = nextReset - now;
   const hrs = Math.floor(msLeft / 3600000);
   const mins = Math.floor((msLeft % 3600000) / 60000);
   const el = document.getElementById('activityResetLabel');
   if (el) el.textContent = 'resets in ' + hrs + 'h ' + mins + 'm';
-  const daysToMonday = (8 - now.getDay()) % 7 || 7;
-  const nextMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + daysToMonday, 0, 0, 0);
+  const shifted = shiftedNow();
+  const daysToMonday = (8 - shifted.getDay()) % 7 || 7;
+  const nextMonday = new Date(shifted.getFullYear(), shifted.getMonth(), shifted.getDate() + daysToMonday, DAY_RESET_HOUR, 0, 0);
   const wLeft = nextMonday - now;
   const wDays = Math.floor(wLeft / 86400000);
   const wHrs = Math.floor((wLeft % 86400000) / 3600000);
