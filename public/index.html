@@ -258,6 +258,22 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
 .add-toggle-btn:hover { background: var(--accent-dim); }
 .add-toggle-btn.open { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 
+/* daily/weekly sub-tab switcher on the quests page */
+.subtab-group { display: flex; gap: 8px; margin-bottom: 22px; }
+.subtab-btn {
+  flex: 1; font-family: var(--pixel); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em;
+  background: var(--surface); border: 1px solid var(--border); color: var(--dim);
+  border-radius: 2px; padding: 11px 14px; cursor: pointer; transition: all 0.15s ease;
+  box-shadow: 3px 3px 0 var(--shadow);
+}
+.subtab-btn:hover { color: var(--ink); border-color: var(--border-strong); }
+.subtab-btn.active {
+  background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+  transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--shadow);
+}
+.subtab-panel { display: none; }
+.subtab-panel.active { display: block; }
+
 /* ============ CARDS ============ */
 .card-list { display: flex; flex-direction: column; gap: 10px; }
 
@@ -787,65 +803,74 @@ footer {
 
   <!-- QUESTS VIEW -->
   <div id="quests" class="view active">
-    <div class="section-title">daily activity <span class="section-sub" id="activityResetLabel">resets in --</span></div>
-    <div class="activity-panel">
-      <div class="activity-summary">
-        <div class="activity-icon">⚡</div>
-        <div>
-          <div class="activity-num" id="activityPointsDisplay">0</div>
-          <div class="activity-sub">activity pts today</div>
+    <div class="subtab-group">
+      <button class="subtab-btn active" id="subtab-btn-quests-daily" onclick="showSubTab('quests','daily')">daily</button>
+      <button class="subtab-btn" id="subtab-btn-quests-weekly" onclick="showSubTab('quests','weekly')">weekly</button>
+    </div>
+
+    <div class="subtab-panel active" id="subtab-quests-daily">
+      <div class="section-title">daily activity <span class="section-sub" id="activityResetLabel">resets in --</span></div>
+      <div class="activity-panel">
+        <div class="activity-summary">
+          <div class="activity-icon">⚡</div>
+          <div>
+            <div class="activity-num" id="activityPointsDisplay">0</div>
+            <div class="activity-sub">activity pts today</div>
+          </div>
+        </div>
+        <div class="activity-bar-wrap">
+          <div class="activity-bar-track">
+            <div class="activity-bar-fill" id="activityBarFill" style="width:0%"></div>
+            <div id="activityNodes"></div>
+          </div>
         </div>
       </div>
-      <div class="activity-bar-wrap">
-        <div class="activity-bar-track">
-          <div class="activity-bar-fill" id="activityBarFill" style="width:0%"></div>
-          <div id="activityNodes"></div>
+
+      <div class="section-title">daily quests <span class="section-sub">resets every day</span>
+        <button class="add-toggle-btn" id="toggle-dailyPanel" onclick="toggleAddForm('dailyPanel')">+ new quest</button>
+      </div>
+      <div class="card-list" id="dailyList"></div>
+      <div class="add-form-panel hidden" id="dailyPanel">
+        <div class="add-form">
+          <input type="text" name="name" id="dailyName" placeholder="new daily quest (e.g. read 20 min)">
+          <input type="text" name="cat" id="dailyCat" placeholder="category (optional)" list="catList" style="width:150px;">
+          <input type="number" name="pts" id="dailyPts" placeholder="pts" value="20" min="1">
+          <button class="add-btn" onclick="addDaily()">+ add</button>
         </div>
+        <div class="day-picker" id="dailyDays"></div>
+        <div class="day-picker-hint">active days — leave blank for every day (rest days don't break streaks or count as missed)</div>
       </div>
     </div>
 
-    <div class="section-title">daily quests <span class="section-sub">resets every day</span>
-      <button class="add-toggle-btn" id="toggle-dailyPanel" onclick="toggleAddForm('dailyPanel')">+ new quest</button>
-    </div>
-    <div class="card-list" id="dailyList"></div>
-    <div class="add-form-panel hidden" id="dailyPanel">
-      <div class="add-form">
-        <input type="text" name="name" id="dailyName" placeholder="new daily quest (e.g. read 20 min)">
-        <input type="text" name="cat" id="dailyCat" placeholder="category (optional)" list="catList" style="width:150px;">
-        <input type="number" name="pts" id="dailyPts" placeholder="pts" value="20" min="1">
-        <button class="add-btn" onclick="addDaily()">+ add</button>
-      </div>
-      <div class="day-picker" id="dailyDays"></div>
-      <div class="day-picker-hint">active days — leave blank for every day (rest days don't break streaks or count as missed)</div>
-    </div>
-
-    <div class="section-title">weekly activity <span class="section-sub" id="weeklyResetLabel">resets monday</span></div>
-    <div class="activity-panel">
-      <div class="activity-summary">
-        <div class="activity-icon">🗓️</div>
-        <div>
-          <div class="activity-num" id="weeklyActivityPointsDisplay">0</div>
-          <div class="activity-sub">activity pts this week</div>
+    <div class="subtab-panel" id="subtab-quests-weekly">
+      <div class="section-title">weekly activity <span class="section-sub" id="weeklyResetLabel">resets monday</span></div>
+      <div class="activity-panel">
+        <div class="activity-summary">
+          <div class="activity-icon">🗓️</div>
+          <div>
+            <div class="activity-num" id="weeklyActivityPointsDisplay">0</div>
+            <div class="activity-sub">activity pts this week</div>
+          </div>
+        </div>
+        <div class="activity-bar-wrap">
+          <div class="activity-bar-track">
+            <div class="activity-bar-fill" id="weeklyActivityBarFill" style="width:0%"></div>
+            <div id="weeklyActivityNodes"></div>
+          </div>
         </div>
       </div>
-      <div class="activity-bar-wrap">
-        <div class="activity-bar-track">
-          <div class="activity-bar-fill" id="weeklyActivityBarFill" style="width:0%"></div>
-          <div id="weeklyActivityNodes"></div>
-        </div>
-      </div>
-    </div>
 
-    <div class="section-title">weekly quests <span class="section-sub">resets every monday</span>
-      <button class="add-toggle-btn" id="toggle-weeklyPanel" onclick="toggleAddForm('weeklyPanel')">+ new quest</button>
-    </div>
-    <div class="card-list" id="weeklyList"></div>
-    <div class="add-form-panel hidden" id="weeklyPanel">
-      <div class="add-form">
-        <input type="text" name="name" id="weeklyName" placeholder="new weekly quest (e.g. deep-clean the room)">
-        <input type="text" name="cat" id="weeklyCat" placeholder="category (optional)" list="catList" style="width:150px;">
-        <input type="number" name="pts" id="weeklyPts" placeholder="pts" value="60" min="1">
-        <button class="add-btn" onclick="addWeekly()">+ add</button>
+      <div class="section-title">weekly quests <span class="section-sub">resets every monday</span>
+        <button class="add-toggle-btn" id="toggle-weeklyPanel" onclick="toggleAddForm('weeklyPanel')">+ new quest</button>
+      </div>
+      <div class="card-list" id="weeklyList"></div>
+      <div class="add-form-panel hidden" id="weeklyPanel">
+        <div class="add-form">
+          <input type="text" name="name" id="weeklyName" placeholder="new weekly quest (e.g. deep-clean the room)">
+          <input type="text" name="cat" id="weeklyCat" placeholder="category (optional)" list="catList" style="width:150px;">
+          <input type="number" name="pts" id="weeklyPts" placeholder="pts" value="60" min="1">
+          <button class="add-btn" onclick="addWeekly()">+ add</button>
+        </div>
       </div>
     </div>
 
@@ -923,42 +948,54 @@ footer {
 
   <!-- PROFILE VIEW -->
   <div id="profile" class="view">
-    <div class="section-title">login streak <span class="section-sub" id="loginStreakLabel"></span></div>
-    <div class="login-row" id="loginRow"></div>
-
-    <div class="section-title">achievements</div>
-    <div class="ach-grid" id="achGrid"></div>
-
-    <div class="section-title">stats</div>
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-num" id="statCompleted">0</div><div class="stat-label">quests done</div></div>
-      <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">best streak</div></div>
-      <div class="stat-card"><div class="stat-num" id="statLifetime">0</div><div class="stat-label">lifetime xp</div></div>
-      <div class="stat-card"><div class="stat-num" id="statRedeemed">0</div><div class="stat-label">redeemed</div></div>
-      <div class="stat-card"><div class="stat-num" id="statRate7">—</div><div class="stat-label">7-day rate</div></div>
-      <div class="stat-card"><div class="stat-num" id="statRate30">—</div><div class="stat-label">30-day rate</div></div>
-      <div class="stat-card"><div class="stat-num" id="statMissed30">0</div><div class="stat-label">missed (30d)</div></div>
-      <div class="stat-card"><div class="stat-num" id="statBestDay">—</div><div class="stat-label">best day (30d)</div></div>
+    <div class="subtab-group">
+      <button class="subtab-btn active" id="subtab-btn-profile-overview" onclick="showSubTab('profile','overview')">overview</button>
+      <button class="subtab-btn" id="subtab-btn-profile-charts" onclick="showSubTab('profile','charts')">charts</button>
+      <button class="subtab-btn" id="subtab-btn-profile-report" onclick="showSubTab('profile','report')">report</button>
     </div>
 
-    <div class="section-title">last 14 days <span class="section-sub">done vs missed per day</span></div>
-    <div class="widget" style="display:block;">
-      <div class="day-chart" id="dayChart"></div>
-      <div class="chart-legend">
-        <span><span class="legend-dot legend-done"></span> done</span>
-        <span><span class="legend-dot legend-missed"></span> missed</span>
+    <div class="subtab-panel active" id="subtab-profile-overview">
+      <div class="section-title">login streak <span class="section-sub" id="loginStreakLabel"></span></div>
+      <div class="login-row" id="loginRow"></div>
+
+      <div class="section-title">achievements</div>
+      <div class="ach-grid" id="achGrid"></div>
+
+      <div class="section-title">stats</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-num" id="statCompleted">0</div><div class="stat-label">quests done</div></div>
+        <div class="stat-card"><div class="stat-num" id="statStreak">0</div><div class="stat-label">best streak</div></div>
+        <div class="stat-card"><div class="stat-num" id="statLifetime">0</div><div class="stat-label">lifetime xp</div></div>
+        <div class="stat-card"><div class="stat-num" id="statRedeemed">0</div><div class="stat-label">redeemed</div></div>
+        <div class="stat-card"><div class="stat-num" id="statRate7">—</div><div class="stat-label">7-day rate</div></div>
+        <div class="stat-card"><div class="stat-num" id="statRate30">—</div><div class="stat-label">30-day rate</div></div>
+        <div class="stat-card"><div class="stat-num" id="statMissed30">0</div><div class="stat-label">missed (30d)</div></div>
+        <div class="stat-card"><div class="stat-num" id="statBestDay">—</div><div class="stat-label">best day (30d)</div></div>
       </div>
     </div>
 
-    <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
-    <div class="card-list" id="questReport"></div>
-
-    <div class="section-title">past year <span class="section-sub">quest completions per day</span></div>
-    <div class="widget" style="display:block;">
-      <div class="heatmap-scroll">
-        <div class="hm-months" id="hmMonths" aria-hidden="true"></div>
-        <div class="heatmap" id="heatmap"></div>
+    <div class="subtab-panel" id="subtab-profile-charts">
+      <div class="section-title">last 14 days <span class="section-sub">done vs missed per day</span></div>
+      <div class="widget" style="display:block;">
+        <div class="day-chart" id="dayChart"></div>
+        <div class="chart-legend">
+          <span><span class="legend-dot legend-done"></span> done</span>
+          <span><span class="legend-dot legend-missed"></span> missed</span>
+        </div>
       </div>
+
+      <div class="section-title">past year <span class="section-sub">quest completions per day</span></div>
+      <div class="widget" style="display:block;">
+        <div class="heatmap-scroll">
+          <div class="hm-months" id="hmMonths" aria-hidden="true"></div>
+          <div class="heatmap" id="heatmap"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subtab-panel" id="subtab-profile-report">
+      <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
+      <div class="card-list" id="questReport"></div>
     </div>
 
     <div class="section-title">data</div>
@@ -1143,6 +1180,36 @@ function showView(viewName) {
     statsDirty = false;
   }
 }
+
+/* sub-tabs within a page (quests: daily/weekly, profile: overview/charts/report),
+   so you don't have to scroll past one section to reach another. Scoped to the
+   given view id so switching tabs on one page never touches another page's tabs.
+   Remembers the last choice per page across reloads. */
+function showSubTab(scope, tab) {
+  const root = document.getElementById(scope);
+  root.querySelectorAll('.subtab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('subtab-' + scope + '-' + tab).classList.add('active');
+  root.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('subtab-btn-' + scope + '-' + tab).classList.add('active');
+  try { localStorage.setItem('subtab-' + scope, tab); } catch (e) {}
+  // the heatmap's initial scroll-to-latest only works while its container has
+  // real layout, which display:none panels don't have — redo it on reveal
+  if (scope === 'profile' && tab === 'charts') scrollHeatmapToEnd();
+}
+// scrolls the past-year heatmap to show the most recent dates (right edge)
+function scrollHeatmapToEnd() {
+  const hm = document.getElementById('heatmap');
+  if (hm && hm.parentElement && typeof hm.parentElement.scrollWidth === 'number') {
+    hm.parentElement.scrollLeft = hm.parentElement.scrollWidth;
+  }
+}
+function restoreSubTab(scope, defaultTab) {
+  let saved = null;
+  try { saved = localStorage.getItem('subtab-' + scope); } catch (e) {}
+  if (saved && saved !== defaultTab) showSubTab(scope, saved);
+}
+restoreSubTab('quests', 'daily');
+restoreSubTab('profile', 'overview');
 
 /* ============ ADD-FORM TOGGLES ============ */
 function toggleAddForm(id) {
@@ -2106,9 +2173,7 @@ function renderStatistics() {
     }
     hm.appendChild(col);
   }
-  if (hm.parentElement && typeof hm.parentElement.scrollWidth === 'number') {
-    hm.parentElement.scrollLeft = hm.parentElement.scrollWidth;
-  }
+  scrollHeatmapToEnd();
 
   // per-quest report
   const report = document.getElementById('questReport');
