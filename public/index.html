@@ -1223,6 +1223,10 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     </div>
 
     <div class="subtab-panel" id="subtab-profile-report">
+      <div class="section-title">daily report</div>
+      <div class="widget" style="display:block;">
+        <p id="rptNarrative" style="line-height:1.75; font-size:13px; color:var(--dim);">—</p>
+      </div>
       <div class="section-title">today</div>
       <div class="rpt-summary">
         <div class="rpt-cell"><div class="rpt-num num" id="rptDone">0</div><div class="rpt-label">quests done today</div></div>
@@ -3014,11 +3018,10 @@ function pickTheme(t){
 (function(){ var s=null; try{ s=localStorage.getItem('questTheme'); }catch(e){} if (s){ pickTheme(s); } else { highlightTheme(); } })();
 
 /* ===== overview page: hexagon medallion + segmented daily-ring — redesign ===== */
-function hexPath(cx,cy,r){ var p=[]; for(var k=0;k<6;k++){ var a=(-90+k*60)*Math.PI/180; p.push((cx+r*Math.cos(a)).toFixed(2)+' '+(cy+r*Math.sin(a)).toFixed(2)); } return 'M'+p.join(' L ')+' Z'; }
 function buildOvRing(done,total){ var svg=document.getElementById('ovRing'); if(!svg) return; total=total||1;
-  var r=52, d=hexPath(60,60,r), P=6*r, gap=total>1?8:0, seg=P/total-gap, html='';
-  for(var i=0;i<total;i++){ var off=-i*(P/total);
-    html+='<path d="'+d+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="6" stroke-linecap="butt" stroke-linejoin="miter" stroke-dasharray="'+seg+' '+(P-seg)+'" stroke-dashoffset="'+off+'"/>'; }
+  var R=52,C=2*Math.PI*R,gap=total>1?6:0,seg=C/total-gap,html='';
+  for(var i=0;i<total;i++){ var off=-i*(C/total);
+    html+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+seg+' '+(C-seg)+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'; }
   svg.innerHTML=html;
 }
 function buildOvWeek(){ var el=document.getElementById('ovWeek'); if(!el || typeof state==='undefined' || !state) return;
@@ -3063,6 +3066,20 @@ function fillReport(){ if(typeof state==='undefined' || !state) return;
   var done=dailies.filter(function(q){ try{return isDone(q);}catch(e){return false;} }).length;
   var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
   set('rptDone',done); set('rptPts',state.dailyActivityPoints||0); set('rptStreak',state.loginStreak||0); set('rptBest',state.bestStreak||0);
+
+  var nEl=document.getElementById('rptNarrative'); if(nEl){
+    var esc=(typeof escapeHtml==='function')?escapeHtml:function(s){return s;};
+    var N=dailies.length, pct=N?Math.round(100*done/N):0;
+    var fq=null; for(var i=0;i<dailies.length;i++){ if(!isDone(dailies[i])){ fq=dailies[i]; break; } }
+    var opener = !N ? 'No daily quests set yet.' : done===0 ? 'Fresh day, nothing cleared yet.' : (done===N ? 'Clean sweep —' : pct>=50 ? 'Solid progress —' : 'Slow start —');
+    var streakTxt = (state.loginStreak||0)>0 ? 'keeping your <b style="color:var(--ink)">'+state.loginStreak+'-day</b> login streak alive' : 'no active login streak yet';
+    var focusTxt = fq ? ' Your focus quest, <b style="color:var(--ink)">'+esc(fq.name)+'</b> (+'+fq.points+'), is still open.' : (N ? ' All daily quests are done — nice work.' : ' Add one in the Quests tab to get going.');
+    var catDone={}; dailies.forEach(function(q){ if(q.category && isDone(q)) catDone[q.category]=(catDone[q.category]||0)+1; });
+    var topCat=null,topN=0; for(var c in catDone){ if(catDone[c]>topN){ topN=catDone[c]; topCat=c; } }
+    var catTxt = topCat ? ' Strongest category today: <b style="color:var(--ink)">'+esc(topCat)+'</b>.' : '';
+    var body = N ? (' You’ve cleared <b style="color:var(--ink)">'+done+' of '+N+'</b> daily quests for <b style="color:var(--accent)">+'+(state.dailyActivityPoints||0)+'</b> activity points, '+streakTxt+'.') : '';
+    nEl.innerHTML = opener + body + focusTxt + catTxt;
+  }
 }
 if (typeof renderStatistics === 'function'){ var _rsOrig=renderStatistics; renderStatistics=function(){ _rsOrig.apply(this,arguments); try{clampAch();}catch(e){} try{fillReport();}catch(e){} }; }
 
