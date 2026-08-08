@@ -69,13 +69,15 @@ body.theme-angels {
   --scanline: rgba(120, 60, 90, 0.03);
 }
 #angels-bg{ background:
-  radial-gradient(120% 90% at 50% -10%, rgba(255,140,190,.18), transparent 55%),
-  radial-gradient(80% 60% at 88% 112%, rgba(95,207,174,.16), transparent 60%),
+  radial-gradient(60% 50% at 14% 8%, rgba(255,120,180,.20), transparent 55%),   /* Aria — pink */
+  radial-gradient(60% 50% at 86% 10%, rgba(255,205,80,.16), transparent 55%),    /* Nangong Yu — gold/red */
+  radial-gradient(72% 56% at 55% 112%, rgba(95,207,174,.18), transparent 60%),   /* Sunna — mint */
   linear-gradient(180deg, #ffeaf2, #ffe1ec 60%, #ffd7e6); }
-.idol-glow{ position:absolute; border-radius:50%; filter:blur(72px); opacity:.55; animation:idolFloat 16s ease-in-out infinite; }
-.idol-glow.g1{ width:340px; height:340px; background:rgba(255,120,180,.5); top:8%; left:12%; }
-.idol-glow.g2{ width:300px; height:300px; background:rgba(120,220,195,.5); bottom:10%; right:14%; animation-delay:-8s; }
-@keyframes idolFloat{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(30px,-24px); } }
+.idol-glow{ position:absolute; border-radius:50%; filter:blur(72px); opacity:.5; animation:idolFloat 16s ease-in-out infinite; }
+.idol-glow.g1{ width:320px; height:320px; background:rgba(255,110,175,.55); top:6%; left:9%; }          /* Aria */
+.idol-glow.g2{ width:300px; height:300px; background:rgba(120,220,195,.55); bottom:8%; right:16%; animation-delay:-8s; } /* Sunna */
+.idol-glow.g3{ width:270px; height:270px; background:rgba(255,205,80,.5); top:5%; right:11%; animation-delay:-4s; }      /* Nangong Yu */
+@keyframes idolFloat{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(28px,-22px); } }
 
 body {
   font-family: var(--mono);
@@ -971,6 +973,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 <div id="angels-bg" class="bg-layer">
   <div class="idol-glow g1"></div>
   <div class="idol-glow g2"></div>
+  <div class="idol-glow g3"></div>
 </div>
 <div class="vignette"></div>
 <div class="grain"></div>
