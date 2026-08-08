@@ -762,7 +762,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .stat-card{ border-radius:var(--r); box-shadow:var(--soft); }
 
 /* ===== HUD LAYOUT (redesign rebuild) — 3-column dashboard ===== */
-.wrap{ max-width:1400px; }
+.wrap{ max-width:none; padding:20px; }
 .hud{ display:grid; grid-template-columns:290px minmax(0,1fr) 300px; gap:20px; align-items:start; grid-auto-flow:dense; }
 .hud-left{ grid-column:1; grid-row:1; }
 .hud-center{ grid-column:2; grid-row:1; min-width:0; }
@@ -826,6 +826,13 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .week .wd.today{ box-shadow:0 0 0 2px var(--accent-border); }
 .begin{ margin-top:22px; background:var(--accent); color:var(--accent-ink); border:none; border-radius:11px; padding:11px 22px; font-family:var(--mono); font-size:12px; font-weight:500; cursor:pointer; transition:.15s; }
 .begin:hover{ opacity:.92; } .begin:active{ transform:scale(.98); }
+
+/* achievements collapse + report summary */
+.ach-grid.ach-collapsed > *:nth-child(n+7){ display:none; }
+.rpt-summary{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:6px; }
+.rpt-cell{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; box-shadow:var(--soft); }
+.rpt-num{ font-family:var(--pixel); font-size:22px; color:var(--accent); }
+.rpt-label{ font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -1196,6 +1203,13 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     </div>
 
     <div class="subtab-panel" id="subtab-profile-report">
+      <div class="section-title">today</div>
+      <div class="rpt-summary">
+        <div class="rpt-cell"><div class="rpt-num num" id="rptDone">0</div><div class="rpt-label">quests done today</div></div>
+        <div class="rpt-cell"><div class="rpt-num num" id="rptPts">0</div><div class="rpt-label">activity pts today</div></div>
+        <div class="rpt-cell"><div class="rpt-num num" id="rptStreak">0</div><div class="rpt-label">login streak</div></div>
+        <div class="rpt-cell"><div class="rpt-num num" id="rptBest">0</div><div class="rpt-label">best streak</div></div>
+      </div>
       <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
       <div class="card-list" id="questReport"></div>
     </div>
@@ -3009,6 +3023,24 @@ function renderOverview(){ if(typeof state==='undefined' || !state) return;
 }
 function ovBeginFocus(){ if(typeof ftRun!=='undefined' && !ftRun && typeof ftToggle==='function') ftToggle(); }
 if (typeof render === 'function'){ var _ovOrigRender = render; render = function(){ _ovOrigRender.apply(this, arguments); try{ renderOverview(); }catch(e){} }; }
+
+/* ===== achievements recent-6 + show-all, and report today-summary — redesign ===== */
+function clampAch(){ var g=document.getElementById('achGrid'); if(!g) return; var n=g.children.length; var btn=document.getElementById('achToggle');
+  if(n>6){ if(!g.classList.contains('ach-collapsed')) g.classList.add('ach-collapsed');
+    if(!btn){ btn=document.createElement('button'); btn.id='achToggle'; btn.className='add-btn'; btn.style.marginTop='10px';
+      btn.onclick=function(){ var col=g.classList.toggle('ach-collapsed'); btn.textContent=col?('show all ('+g.children.length+')'):'show recent'; };
+      g.parentNode.insertBefore(btn, g.nextSibling); }
+    btn.style.display=''; btn.textContent=(g.classList.contains('ach-collapsed')?('show all ('+n+')'):'show recent');
+  } else if(btn){ btn.style.display='none'; g.classList.remove('ach-collapsed'); }
+}
+function fillReport(){ if(typeof state==='undefined' || !state) return;
+  var isDone=(typeof KIND_CFG!=='undefined'&&KIND_CFG.daily)?KIND_CFG.daily.isDone:function(q){return q.done;};
+  var dailies=(state.dailyQuests||[]).filter(function(q){ try{return questActiveToday(q);}catch(e){return true;} });
+  var done=dailies.filter(function(q){ try{return isDone(q);}catch(e){return false;} }).length;
+  var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('rptDone',done); set('rptPts',state.dailyActivityPoints||0); set('rptStreak',state.loginStreak||0); set('rptBest',state.bestStreak||0);
+}
+if (typeof renderStatistics === 'function'){ var _rsOrig=renderStatistics; renderStatistics=function(){ _rsOrig.apply(this,arguments); try{clampAch();}catch(e){} try{fillReport();}catch(e){} }; }
 
 /* ===== dashboard module show/hide toggles (persisted) — redesign ===== */
 (function(){ var inputs=document.querySelectorAll('input[data-mod]'); if(!inputs.length) return;
