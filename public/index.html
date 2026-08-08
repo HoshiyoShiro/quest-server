@@ -1072,6 +1072,8 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     <div class="subtab-group">
       <button class="subtab-btn active" id="subtab-btn-quests-daily" onclick="showSubTab('quests','daily')">daily</button>
       <button class="subtab-btn" id="subtab-btn-quests-weekly" onclick="showSubTab('quests','weekly')">weekly</button>
+      <button class="subtab-btn" id="subtab-btn-quests-monthly" onclick="showSubTab('quests','monthly')">monthly</button>
+      <button class="subtab-btn" id="subtab-btn-quests-goals" onclick="showSubTab('quests','goals')">goals</button>
     </div>
 
     <div class="subtab-panel active" id="subtab-quests-daily">
@@ -1140,16 +1142,33 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       </div>
     </div>
 
-    <div class="section-title">one-time goals
-      <button class="add-toggle-btn" id="toggle-goalPanel" onclick="toggleAddForm('goalPanel')">+ new goal</button>
+    <div class="subtab-panel" id="subtab-quests-monthly">
+      <div class="section-title">monthly quests <span class="section-sub">resets every month</span>
+        <button class="add-toggle-btn" id="toggle-monthlyPanel" onclick="toggleAddForm('monthlyPanel')">+ new quest</button>
+      </div>
+      <div class="card-list" id="monthlyList"></div>
+      <div class="add-form-panel hidden" id="monthlyPanel">
+        <div class="add-form">
+          <input type="text" name="name" id="monthlyName" placeholder="new monthly quest (e.g. index fund contribution)">
+          <input type="text" name="cat" id="monthlyCat" placeholder="category (optional)" list="catList" style="width:150px;">
+          <input type="number" name="pts" id="monthlyPts" placeholder="pts" value="50" min="1">
+          <button class="add-btn" onclick="addMonthly()">+ add</button>
+        </div>
+      </div>
     </div>
-    <div class="card-list" id="goalList"></div>
-    <div class="add-form-panel hidden" id="goalPanel">
-      <div class="add-form">
-        <input type="text" name="name" id="goalName" placeholder="new goal (e.g. finish project draft)">
-        <input type="text" name="cat" id="goalCat" placeholder="category (optional)" list="catList" style="width:150px;">
-        <input type="number" name="pts" id="goalPts" placeholder="pts" value="50" min="1">
-        <button class="add-btn" onclick="addGoal()">+ add</button>
+
+    <div class="subtab-panel" id="subtab-quests-goals">
+      <div class="section-title">one-time goals
+        <button class="add-toggle-btn" id="toggle-goalPanel" onclick="toggleAddForm('goalPanel')">+ new goal</button>
+      </div>
+      <div class="card-list" id="goalList"></div>
+      <div class="add-form-panel hidden" id="goalPanel">
+        <div class="add-form">
+          <input type="text" name="name" id="goalName" placeholder="new goal (e.g. finish project draft)">
+          <input type="text" name="cat" id="goalCat" placeholder="category (optional)" list="catList" style="width:150px;">
+          <input type="number" name="pts" id="goalPts" placeholder="pts" value="50" min="1">
+          <button class="add-btn" onclick="addGoal()">+ add</button>
+        </div>
       </div>
     </div>
 
@@ -1708,7 +1727,7 @@ const ACHIEVEMENTS = [
   { id: 'rank20', icon: '🚀', name: 'Ascended', desc: 'Reach Rank 20', check: s => calcRank(s.lifetimePoints).level >= 20 },
   { id: 'freeze5', icon: '🧊', name: 'Iceberg', desc: 'Earn 5 Streak Freeze tokens', check: s => s.freezeEarnedTotal >= 5 },
   { id: 'perfect_day', icon: '✨', name: 'Perfect Day', desc: 'Complete every daily quest (3+) in one day', check: s => { const act = s.dailyQuests.filter(questActiveToday); return act.length >= 3 && act.every(q => q.completedToday); } },
-  { id: 'organizer', icon: '🗂️', name: 'Organizer', desc: 'Use 3 different quest categories', check: s => new Set([...s.dailyQuests, ...s.weeklyQuests, ...s.goals].filter(q => q.category).map(q => q.category)).size >= 3 },
+  { id: 'organizer', icon: '🗂️', name: 'Organizer', desc: 'Use 3 different quest categories', check: s => new Set([...s.dailyQuests, ...s.weeklyQuests, ...s.monthlyQuests, ...s.goals].filter(q => q.category).map(q => q.category)).size >= 3 },
   { id: 'whale', icon: '🐋', name: 'Whale', desc: 'Redeem 20 rewards', check: s => s.redeemedCount >= 20 },
   { id: 'max_grinder', icon: '⛏️', name: 'Max Grinder', desc: 'Claim all daily activity milestones in one day', check: s => s.dailyActivityClaimed.length >= ACTIVITY_MILESTONES.length },
   { id: 'week_grinder', icon: '🗓️', name: 'Overachiever', desc: 'Claim all weekly activity milestones in one week', check: s => (s.weeklyActivityClaimed || []).length >= WEEKLY_ACTIVITY_MILESTONES.length },
@@ -1720,11 +1739,11 @@ function defaultState() {
   const today = todayStr();
   return {
     points: 0, lifetimePoints: 0,
-    dailyQuests: [], weeklyQuests: [], goals: [], rewards: [], history: [], quotes: [],
+    dailyQuests: [], weeklyQuests: [], monthlyQuests: [], goals: [], rewards: [], history: [], quotes: [],
     notes: '',
     bestStreak: 0, completedCount: 0, redeemedCount: 0,
     dayLog: {}, collapsedCats: {},
-    lastActiveDate: today, lastWeekStart: getWeekStart(),
+    lastActiveDate: today, lastWeekStart: getWeekStart(), lastMonthKey: getSeasonKey(),
     lastLoginDate: null, loginStreak: 0, loginHistory: [],
     freezeTokens: 0, freezeEarnedTotal: 0,
     seasonKey: getSeasonKey(), seasonXp: 0, claimedMilestones: [],
@@ -1867,6 +1886,20 @@ function applyDefaultsAndRollover(raw) {
     data.lastWeekStart = weekStart;
   }
 
+  let monthKey = getSeasonKey();
+  if (data.lastMonthKey && monthKey < data.lastMonthKey) monthKey = data.lastMonthKey;
+  if (data.lastMonthKey !== monthKey) {
+    data.monthlyQuests.forEach(q => {
+      if (!q.completedThisMonth) {
+        q.monthStreak = 0;
+        q.missedCount = (q.missedCount || 0) + 1;
+      }
+      q.completedThisMonth = false;
+      if (q.subs) q.subs.forEach(s => { s.done = false; });
+    });
+    data.lastMonthKey = monthKey;
+  }
+
   // keep dayLog bounded to the last year (feeds the heatmap)
   const dayLogCutoff = addDays(today, -371);
   for (const k in data.dayLog) { if (k < dayLogCutoff) delete data.dayLog[k]; }
@@ -1972,6 +2005,7 @@ let lastToggledId = null; // scopes the check-pop animation to the quest just co
 const KIND_CFG = {
   daily:  { arr: () => state.dailyQuests,  isDone: q => q.completedToday,    toggle: 'toggleDaily',  remove: 'removeDaily',  meta: q => 'streak ' + q.streak },
   weekly: { arr: () => state.weeklyQuests, isDone: q => q.completedThisWeek, toggle: 'toggleWeekly', remove: 'removeWeekly', meta: q => q.weekStreak + ' week streak' },
+  monthly:{ arr: () => state.monthlyQuests,isDone: q => q.completedThisMonth,toggle: 'toggleMonthly',remove: 'removeMonthly',meta: q => q.monthStreak + ' month streak' },
   goal:   { arr: () => state.goals,        isDone: q => q.completed,         toggle: 'toggleGoal',   remove: 'removeGoal',   meta: () => '' }
 };
 
@@ -2232,11 +2266,12 @@ function render() {
 
   renderQuestList(document.getElementById('dailyList'), state.dailyQuests, 'daily', 'no daily quests yet — add one below.');
   renderQuestList(document.getElementById('weeklyList'), state.weeklyQuests, 'weekly', 'no weekly quests yet — add one below.');
+  renderQuestList(document.getElementById('monthlyList'), state.monthlyQuests, 'monthly', 'no monthly quests yet — add one below.');
   renderQuestList(document.getElementById('goalList'), state.goals, 'goal', 'no goals yet — add one below.');
 
   // category suggestions for add/edit forms
   const catSet = new Set();
-  [...state.dailyQuests, ...state.weeklyQuests, ...state.goals].forEach(q => { if (q.category) catSet.add(q.category); });
+  [...state.dailyQuests, ...state.weeklyQuests, ...state.monthlyQuests, ...state.goals].forEach(q => { if (q.category) catSet.add(q.category); });
   const catListEl = document.getElementById('catList');
   catListEl.innerHTML = '';
   [...catSet].sort().forEach(c => {
@@ -2483,7 +2518,8 @@ function renderStatistics() {
   report.innerHTML = '';
   const rows = [
     ...state.dailyQuests.map(q => ({ q, kind: 'daily' })),
-    ...state.weeklyQuests.map(q => ({ q, kind: 'weekly' }))
+    ...state.weeklyQuests.map(q => ({ q, kind: 'weekly' })),
+    ...state.monthlyQuests.map(q => ({ q, kind: 'monthly' }))
   ];
   if (rows.length === 0) {
     report.innerHTML = '<div class="empty-state">no recurring quests yet — stats show up once you add some.</div>';
@@ -2636,6 +2672,43 @@ function toggleWeekly(id) {
   afterAction();
 }
 function removeWeekly(id) { removeFromList(state.weeklyQuests, id, 'quest'); }
+
+function addMonthly() {
+  const nameEl = document.getElementById('monthlyName');
+  const ptsEl = document.getElementById('monthlyPts');
+  const catEl = document.getElementById('monthlyCat');
+  const name = nameEl.value.trim();
+  const pts = parseInt(ptsEl.value) || 50;
+  if (!name) return;
+  state.monthlyQuests.push({ id: uid(), name, points: pts, category: catEl.value.trim(), monthStreak: 0, completedThisMonth: false, doneCount: 0, missedCount: 0 });
+  nameEl.value = '';
+  catEl.value = '';
+  afterAction();
+  closeAddForm('monthlyPanel');
+}
+function toggleMonthly(id) {
+  const q = state.monthlyQuests.find(x => x.id === id);
+  if (!q) return;
+  if (q.completedThisMonth) {
+    q.completedThisMonth = false;
+    q.monthStreak = Math.max(0, q.monthStreak - 1);
+    q.doneCount = Math.max(0, (q.doneCount || 0) - 1);
+    logDayDone(-1);
+    losePoints(q.points);
+    state.completedCount = Math.max(0, state.completedCount - 1);
+  } else {
+    q.completedThisMonth = true;
+    q.monthStreak += 1;
+    q.doneCount = (q.doneCount || 0) + 1;
+    lastToggledId = q.id;
+    completeFeedback();
+    logDayDone(1);
+    gainPoints(q.points);
+    state.completedCount += 1;
+  }
+  afterAction();
+}
+function removeMonthly(id) { removeFromList(state.monthlyQuests, id, 'quest'); }
 
 function addGoal() {
   const nameEl = document.getElementById('goalName');
