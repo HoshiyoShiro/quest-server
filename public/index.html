@@ -798,6 +798,9 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .sw i::after{ content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--dim); transition:.2s; }
 .sw input:checked + i{ background:var(--accent-dim); border-color:var(--accent-border); }
 .sw input:checked + i::after{ transform:translateX(16px); background:var(--accent); }
+.theme-pick{ display:flex; gap:6px; flex-wrap:wrap; }
+.theme-pick button, .pref-btn{ font-family:var(--mono); font-size:11px; background:var(--surface-2); border:1px solid var(--border-strong); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; transition:.15s; }
+.theme-pick button:hover, .pref-btn:hover{ border-color:var(--accent); color:var(--accent); }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -1159,6 +1162,22 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 
   <!-- SETTINGS VIEW -->
   <div id="settings" class="view">
+    <div class="section-title">preferences</div>
+    <div class="widget" style="display:block;">
+      <label class="modrow"><span>Theme</span>
+        <span class="theme-pick">
+          <button onclick="pickTheme('stars')">stars</button>
+          <button onclick="pickTheme('fog')">fog</button>
+          <button onclick="pickTheme('rain')">rain</button>
+          <button onclick="pickTheme('auto')">auto</button>
+        </span>
+      </label>
+      <label class="modrow"><span>Sound</span><button class="pref-btn" onclick="toggleSound()" id="sound-text">sound: off</button></label>
+      <label class="modrow"><span>Profile</span><span><span id="currentProfileLabel">—</span> <button class="pref-btn" onclick="switchProfile()">switch</button></span></label>
+      <label class="modrow"><span>Status</span><span class="dash-sub"><span id="syncStatus" role="status" aria-live="polite">saved</span> · <span id="theme-text">mode: stars</span> · auto <span id="auto-status">on</span></span></label>
+      <span id="footer-greeting" style="display:none"></span>
+    </div>
+
     <div class="section-title">dashboard modules <span class="section-sub">show or hide the right-rail widgets</span></div>
     <div class="widget" style="display:block;">
       <label class="modrow"><span>Weather</span><span class="sw"><input type="checkbox" data-mod="mod-weather" checked><i></i></span></label>
@@ -1185,20 +1204,6 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 
   <datalist id="catList"></datalist>
 
-  <footer>
-    <div class="footer-left">
-      <span>quest log — 2026</span>
-      <span>· <span id="currentProfileLabel">—</span></span>
-      <button class="theme-toggle-text" onclick="switchProfile()" style="padding:2px 6px;">switch profile</button>
-    </div>
-    <div class="footer-center"><span id="footer-greeting">keep going</span></div>
-    <div class="footer-right">
-      <span class="auto-indicator" id="syncStatus" role="status" aria-live="polite">saved</span>
-      <button class="theme-toggle-text" onclick="toggleSound()" id="sound-text">sound: off</button>
-      <button class="theme-toggle-text" onclick="cycleTheme()" id="theme-text">mode: stars</button>
-      <span class="auto-indicator">auto: <span id="auto-status">on</span></span>
-    </div>
-  </footer>
 </div>
 
 <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
@@ -2913,6 +2918,13 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
   }
   initProfileGate();
 })();
+
+/* ===== explicit theme picker (settings) — redesign ===== */
+function pickTheme(t){
+  if (t === 'auto'){ autoTheme = true; checkAutoTheme(); applyTheme(currentTheme); }
+  else { autoTheme = false; applyTheme(t); }
+  try { updateGreeting(); } catch(e){}
+}
 
 /* ===== dashboard module show/hide toggles (persisted) — redesign ===== */
 (function(){ var inputs=document.querySelectorAll('input[data-mod]'); if(!inputs.length) return;
