@@ -767,8 +767,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .hud-left{ grid-column:1; grid-row:1; }
 .hud-center{ grid-column:2; grid-row:1; min-width:0; }
 .hud-right{ grid-column:3; grid-row:1; }
-.hud-left, .hud-right{ display:flex; flex-direction:column; gap:16px; position:sticky; top:22px; max-height:calc(100vh - 44px); overflow-y:auto; scrollbar-width:none; }
-.hud-left::-webkit-scrollbar, .hud-right::-webkit-scrollbar{ width:0; height:0; }
+.hud-left, .hud-right{ display:flex; flex-direction:column; gap:16px; position:sticky; top:22px; align-self:start; }
 .hud-left nav{ flex-direction:column; align-items:stretch; margin-bottom:0; gap:8px; }
 .hud-left #nav-home{ text-align:center; padding:2px 0 6px; }
 .hud-clock{ text-align:center; padding-bottom:10px; margin-bottom:2px; border-bottom:1px solid var(--border); }
@@ -807,6 +806,26 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .qtier{ font-family:var(--pixel); font-size:8px; text-transform:uppercase; letter-spacing:.06em; padding:4px 7px; border-radius:5px; border:1px solid var(--border-strong); color:var(--dim); flex-shrink:0; white-space:nowrap; align-self:center; }
 .qtier.tier-hard{ color:var(--danger); border-color:var(--danger); }
 .qtier.tier-normal{ color:var(--accent); border-color:var(--accent-border); }
+
+/* ===== OVERVIEW page (hexagon medallion stage) ===== */
+.ov-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0; min-height:62vh; justify-content:center; }
+.ring-wrap{ position:relative; width:clamp(200px,24vw,240px); aspect-ratio:1; }
+.ring-wrap svg.ring{ position:absolute; inset:0; }
+.ring-wrap svg.ring circle{ transition:stroke .3s ease; }
+.ov-wrap .medallion{ position:absolute; inset:30px; background:var(--surface); border:1px solid var(--border-strong); display:grid; place-items:center;
+  clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%); }
+.rank-num{ font-family:var(--pixel); font-size:clamp(40px,5.5vw,52px); line-height:1; color:var(--accent); }
+.rank-word{ font-family:var(--pixel); font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
+.rank-xp{ font-size:10px; color:var(--dim); margin-top:7px; }
+.core-eyebrow{ margin-top:22px; font-family:var(--pixel); font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
+.core-title{ margin-top:8px; font-family:var(--pixel); font-size:15px; letter-spacing:.02em; }
+.core-sub{ margin-top:6px; font-size:12px; color:var(--dim); }
+.week{ display:flex; gap:7px; justify-content:center; margin-top:18px; }
+.week .wd{ width:11px; height:11px; border-radius:3px; background:var(--surface-2); border:1px solid var(--border-strong); }
+.week .wd.on{ background:var(--accent); border-color:var(--accent); }
+.week .wd.today{ box-shadow:0 0 0 2px var(--accent-border); }
+.begin{ margin-top:22px; background:var(--accent); color:var(--accent-ink); border:none; border-radius:11px; padding:11px 22px; font-family:var(--mono); font-size:12px; font-weight:500; cursor:pointer; transition:.15s; }
+.begin:hover{ opacity:.92; } .begin:active{ transform:scale(.98); }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -886,12 +905,14 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     <symbol id="i-quotes" viewBox="0 0 24 24"><path d="M5 6h14v9H9l-4 3.5z"/></symbol>
     <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></symbol>
     <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 4v2M12 18v2M4.9 7.5l1.8 1M17.3 15.5l1.8 1M4.9 16.5l1.8-1M17.3 8.5l1.8-1"/></symbol>
+    <symbol id="i-overview" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 13l4-3"/><circle cx="12" cy="13" r="1.3"/></symbol>
   </defs></svg>
   <nav>
     <button id="nav-home">quest log</button>
     <div class="hud-clock"><div id="hudClock" class="num">--:--</div><div id="hudDate"></div></div>
     <div class="nav-links">
-      <button onclick="showView('quests')" class="active" id="nav-quests"><svg class="nvic"><use href="#i-quests"/></svg>quests</button>
+      <button onclick="showView('overview')" class="active" id="nav-overview"><svg class="nvic"><use href="#i-overview"/></svg>overview</button>
+      <button onclick="showView('quests')" id="nav-quests"><svg class="nvic"><use href="#i-quests"/></svg>quests</button>
       <button onclick="showView('season')" id="nav-season"><svg class="nvic"><use href="#i-season"/></svg>season</button>
       <button onclick="showView('shop')" id="nav-shop"><svg class="nvic"><use href="#i-shop"/></svg>shop</button>
       <button onclick="showView('quotes')" id="nav-quotes"><svg class="nvic"><use href="#i-quotes"/></svg>quotes</button>
@@ -967,8 +988,23 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 
 <main class="hud-center">
 
+  <!-- OVERVIEW VIEW -->
+  <div id="overview" class="view active">
+    <div class="ov-wrap">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" id="ovRing"></svg>
+        <div class="medallion"><div><div class="rank-num num" id="ovRank">1</div><div class="rank-word">Rank</div><div class="rank-xp num" id="ovXp">0 / 100 XP</div></div></div>
+      </div>
+      <div class="core-eyebrow">Focus quest</div>
+      <div class="core-title" id="ovFocus">—</div>
+      <div class="core-sub" id="ovFocusSub"></div>
+      <div class="week" id="ovWeek"></div>
+      <button class="begin" id="ovBegin" onclick="ovBeginFocus()">▶ Begin focus session</button>
+    </div>
+  </div>
+
   <!-- QUESTS VIEW -->
-  <div id="quests" class="view active">
+  <div id="quests" class="view">
     <div class="subtab-group">
       <button class="subtab-btn active" id="subtab-btn-quests-daily" onclick="showSubTab('quests','daily')">daily</button>
       <button class="subtab-btn" id="subtab-btn-quests-weekly" onclick="showSubTab('quests','weekly')">weekly</button>
@@ -2941,6 +2977,38 @@ function pickTheme(t){
 }
 // restore saved theme on load (falls back to the app's auto default)
 (function(){ var s=null; try{ s=localStorage.getItem('questTheme'); }catch(e){} if (s){ pickTheme(s); } else { highlightTheme(); } })();
+
+/* ===== overview page: hexagon medallion + segmented daily-ring — redesign ===== */
+function buildOvRing(done,total){ var svg=document.getElementById('ovRing'); if(!svg) return; total=total||1;
+  var R=52,C=2*Math.PI*R,gap=total>1?6:0,seg=C/total-gap,html='';
+  for(var i=0;i<total;i++){ var off=-i*(C/total);
+    html+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+seg+' '+(C-seg)+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'; }
+  svg.innerHTML=html;
+}
+function buildOvWeek(){ var el=document.getElementById('ovWeek'); if(!el || typeof state==='undefined' || !state) return;
+  var hist=(state.loginHistory||[]), html='', t=new Date();
+  for(var i=6;i>=0;i--){ var d=new Date(t); d.setDate(d.getDate()-i);
+    var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    html+='<span class="wd'+(hist.indexOf(ds)>=0?' on':'')+(i===0?' today':'')+'"></span>'; }
+  el.innerHTML=html;
+}
+function renderOverview(){ if(typeof state==='undefined' || !state) return;
+  var rank=calcRank(state.lifetimePoints||0);
+  var r=document.getElementById('ovRank'); if(r) r.textContent=rank.level;
+  var xp=document.getElementById('ovXp'); if(xp) xp.textContent=rank.current+' / '+rank.req+' XP';
+  var isDone=(typeof KIND_CFG!=='undefined'&&KIND_CFG.daily)?KIND_CFG.daily.isDone:function(q){return q.done;};
+  var dailies=(state.dailyQuests||[]).filter(function(q){ try{return questActiveToday(q);}catch(e){return true;} });
+  var done=dailies.filter(function(q){ try{return isDone(q);}catch(e){return false;} }).length;
+  buildOvRing(done, dailies.length);
+  var fq=null; for(var i=0;i<dailies.length;i++){ if(!isDone(dailies[i])){ fq=dailies[i]; break; } }
+  var ft=document.getElementById('ovFocus'), fs=document.getElementById('ovFocusSub');
+  if(ft){ if(fq){ ft.textContent=fq.name; fs.textContent='+'+fq.points+' points · daily'; }
+    else if(dailies.length){ ft.textContent='All daily quests done ✓'; fs.textContent='nice work — '+done+'/'+dailies.length; }
+    else { ft.textContent='No daily quests yet'; fs.textContent='add one in Quests'; } }
+  buildOvWeek();
+}
+function ovBeginFocus(){ if(typeof ftRun!=='undefined' && !ftRun && typeof ftToggle==='function') ftToggle(); }
+if (typeof render === 'function'){ var _ovOrigRender = render; render = function(){ _ovOrigRender.apply(this, arguments); try{ renderOverview(); }catch(e){} }; }
 
 /* ===== dashboard module show/hide toggles (persisted) — redesign ===== */
 (function(){ var inputs=document.querySelectorAll('input[data-mod]'); if(!inputs.length) return;
