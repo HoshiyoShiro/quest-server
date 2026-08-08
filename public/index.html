@@ -50,8 +50,8 @@ body.theme-rain {
   --bg: #0b0f14; --surface: #11161e; --surface-2: #17202a;
   --border: #28333f; --border-strong: #3c4a58;
   --ink: #dfe7ef; --dim: #7d8b9c;
-  --accent: #e3b262; --accent-ink: #10151c;
-  --accent-dim: rgba(227, 178, 98, 0.13); --accent-border: rgba(227, 178, 98, 0.38);
+  --accent: #79b8e0; --accent-ink: #08131c;
+  --accent-dim: rgba(121, 184, 224, 0.14); --accent-border: rgba(121, 184, 224, 0.40);
   --danger: #d4755f;
   --hshadow: rgba(0, 0, 0, 0.5); --shadow: rgba(0, 0, 0, 0.5);
   --scanline: rgba(0, 0, 0, 0.05);
@@ -769,9 +769,24 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .hud-right{ grid-column:3; grid-row:1; }
 .hud-left, .hud-right{ display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
 .hud-left nav{ flex-direction:column; align-items:stretch; margin-bottom:0; gap:8px; }
-.hud-left #nav-home{ text-align:center; padding:2px 0 10px; border-bottom:1px solid var(--border); }
+.hud-left #nav-home{ text-align:center; padding:2px 0 6px; }
+.hud-clock{ text-align:center; padding-bottom:10px; margin-bottom:2px; border-bottom:1px solid var(--border); }
+#hudClock{ font-family:var(--pixel); font-size:20px; }
+#hudDate{ font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); margin-top:3px; }
+#hudDate b{ color:var(--accent); font-weight:400; }
 .hud-left .nav-links{ flex-direction:column; gap:4px; width:100%; }
-.hud-left .nav-links button{ text-align:left; padding:9px 12px; width:100%; }
+.hud-left .nav-links button{ display:flex; align-items:center; gap:9px; text-align:left; padding:9px 12px; width:100%; }
+.nvic{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+@media (max-width:1000px){ .hud-clock{ border-bottom:none; padding-bottom:0; margin-right:6px; } .hud-left .nav-links button{ width:auto; } }
+
+/* focus timer */
+.ft-val{ font-family:var(--pixel); font-size:26px; margin-top:4px; }
+.ft-mode{ font-size:11px; color:var(--dim); margin-top:4px; }
+.ft-ctrl{ display:flex; gap:8px; margin-top:12px; }
+.ft-btn{ flex:1; background:transparent; border:1px solid var(--border-strong); color:var(--ink); border-radius:8px; font-family:var(--mono); font-size:11px; padding:8px; cursor:pointer; transition:.15s; }
+.ft-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.ft-btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+.ft-btn.primary:hover{ color:var(--accent-ink); opacity:.92; }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -844,14 +859,22 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 <div class="wrap hidden" id="appRoot">
 <div class="hud">
 <aside class="hud-left">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-quests" viewBox="0 0 24 24"><path d="M5 6h9M5 12h9M5 18h6"/><path d="M17 5l2 2 3-3"/></symbol>
+    <symbol id="i-season" viewBox="0 0 24 24"><path d="M12 4l1.9 4.9L19 10l-5.1 1.1L12 16l-1.9-4.9L5 10l5.1-1.1z"/></symbol>
+    <symbol id="i-shop" viewBox="0 0 24 24"><path d="M6.5 8h11l-1 11.5h-9z"/><path d="M9.2 8a2.8 2.8 0 0 1 5.6 0"/></symbol>
+    <symbol id="i-quotes" viewBox="0 0 24 24"><path d="M5 6h14v9H9l-4 3.5z"/></symbol>
+    <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></symbol>
+  </defs></svg>
   <nav>
     <button id="nav-home">quest log</button>
+    <div class="hud-clock"><div id="hudClock" class="num">--:--</div><div id="hudDate"></div></div>
     <div class="nav-links">
-      <button onclick="showView('quests')" class="active" id="nav-quests">quests</button>
-      <button onclick="showView('season')" id="nav-season">season</button>
-      <button onclick="showView('shop')" id="nav-shop">shop</button>
-      <button onclick="showView('quotes')" id="nav-quotes">quotes</button>
-      <button onclick="showView('profile')" id="nav-profile">profile</button>
+      <button onclick="showView('quests')" class="active" id="nav-quests"><svg class="nvic"><use href="#i-quests"/></svg>quests</button>
+      <button onclick="showView('season')" id="nav-season"><svg class="nvic"><use href="#i-season"/></svg>season</button>
+      <button onclick="showView('shop')" id="nav-shop"><svg class="nvic"><use href="#i-shop"/></svg>shop</button>
+      <button onclick="showView('quotes')" id="nav-quotes"><svg class="nvic"><use href="#i-quotes"/></svg>quotes</button>
+      <button onclick="showView('profile')" id="nav-profile"><svg class="nvic"><use href="#i-profile"/></svg>profile</button>
     </div>
   </nav>
 
@@ -883,6 +906,12 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <div class="big-stat" id="freezeDisplay">0</div>
       <div class="big-stat-sub">auto-protects a missed daily streak</div>
     </div>
+  </div>
+  <div class="dash-mod" id="mod-focus">
+    <div class="dash-label">Focus timer</div>
+    <div class="ft-val num" id="ftVal">25:00</div>
+    <div class="ft-mode" id="ftMode">ready when you are</div>
+    <div class="ft-ctrl"><button class="ft-btn primary" id="ftBtn" onclick="ftToggle()">Start</button><button class="ft-btn" onclick="ftReset()">Reset</button></div>
   </div>
 </aside>
 
@@ -2856,6 +2885,23 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
   }
   initProfileGate();
 })();
+
+/* ===== live clock + time-left (redesign) ===== */
+(function(){const c=document.getElementById('hudClock'),d=document.getElementById('hudDate'); if(!c) return;
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function t(){const n=new Date(),p=x=>String(x).padStart(2,'0'); c.textContent=p(n.getHours())+':'+p(n.getMinutes());
+    const e=new Date(n); e.setHours(24,0,0,0); const ms=e-n;
+    d.innerHTML=DOW[n.getDay()]+' · '+n.getDate()+' '+MON[n.getMonth()].toUpperCase()+' · <b>'+Math.floor(ms/3.6e6)+'h '+Math.floor(ms%3.6e6/6e4)+'m left</b>';}
+  t(); setInterval(t,1000);})();
+
+/* ===== focus timer (redesign) ===== */
+var ftSecs=1500, ftRun=false, ftInt=null;
+function ftShow(){var v=document.getElementById('ftVal'); if(v) v.textContent=Math.floor(ftSecs/60)+':'+String(ftSecs%60).padStart(2,'0');}
+function ftToggle(){var b=document.getElementById('ftBtn'),m=document.getElementById('ftMode'); if(!b) return;
+  ftRun=!ftRun; b.textContent=ftRun?'Pause':'Start'; b.classList.toggle('primary',!ftRun); m.textContent=ftRun?'stay on target':'paused';
+  clearInterval(ftInt); if(ftRun) ftInt=setInterval(function(){ if(ftSecs>0){ftSecs--;ftShow();} else {ftRun=false;clearInterval(ftInt);b.textContent='Start';b.classList.add('primary');m.textContent='session complete';} },1000);}
+function ftReset(){clearInterval(ftInt); ftRun=false; ftSecs=1500; ftShow(); var b=document.getElementById('ftBtn'),m=document.getElementById('ftMode'); if(b){b.textContent='Start';b.classList.add('primary');} if(m)m.textContent='ready when you are';}
+ftShow();
 
 /* ===== dashboard feeds (free APIs, graceful fallback) — redesign rebuild ===== */
 (function(){
