@@ -760,6 +760,51 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .add-form input, .add-form select, .add-form textarea{ border-radius:8px; }
 .add-btn{ border-radius:8px; }
 .stat-card{ border-radius:var(--r); box-shadow:var(--soft); }
+
+/* ===== HUD LAYOUT (redesign rebuild) — 3-column dashboard ===== */
+.wrap{ max-width:1400px; }
+.hud{ display:grid; grid-template-columns:290px minmax(0,1fr) 290px; gap:20px; align-items:start; }
+.hud-left, .hud-right{ display:flex; flex-direction:column; gap:16px; position:sticky; top:24px; }
+.hud-center{ min-width:0; }
+.hud-left nav{ flex-direction:column; align-items:stretch; margin-bottom:0; gap:8px; }
+.hud-left #nav-home{ text-align:center; padding:2px 0 10px; border-bottom:1px solid var(--border); }
+.hud-left .nav-links{ flex-direction:column; gap:4px; width:100%; }
+.hud-left .nav-links button{ text-align:left; padding:9px 12px; width:100%; }
+.hud .hero{ margin-bottom:0; }
+.hud .hero h1{ font-size:18px; }
+.hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
+.hud .widget{ min-height:0; }
+.hud .quote-banner{ margin-bottom:0; }
+
+.dash-mod{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; box-shadow:var(--soft); }
+.dash-label{ font-family:var(--pixel); font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--dim); display:flex; align-items:center; gap:7px; margin-bottom:10px; }
+.dash-label::before{ content:''; width:6px; height:6px; background:var(--accent); flex-shrink:0; }
+.dash-sub{ font-size:11px; color:var(--dim); }
+.dash-wmain{ display:flex; align-items:baseline; gap:9px; }
+.dash-wtemp{ font-family:var(--pixel); font-size:22px; }
+.dash-wdesc{ font-size:12px; }
+.mkt-row{ display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-top:1px solid var(--border); font-size:12px; }
+.mkt-row:first-child{ border-top:none; }
+.mkt-sym{ font-weight:500; } .mkt-price{ text-align:right; line-height:1.25; }
+.mkt-chg{ font-size:10px; } .up{ color:var(--accent); } .down{ color:var(--danger); }
+.news-item{ display:block; padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--ink); text-decoration:none; line-height:1.4; }
+.news-item:first-child{ border-top:none; } .news-item:hover{ color:var(--accent); }
+.news-item .nmeta{ font-size:9.5px; color:var(--dim); margin-top:3px; }
+.apod-img{ width:100%; height:132px; object-fit:cover; border-radius:8px; margin-bottom:8px; display:block; background:var(--surface-2); }
+.apod-title{ font-size:12px; font-weight:500; }
+.apod-desc{ font-size:10.5px; color:var(--dim); margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+@media (max-width:1000px){
+  .wrap{ padding:16px; }
+  .hud{ grid-template-columns:1fr; gap:14px; }
+  .hud-left, .hud-right{ position:static; }
+  .hud-left nav{ flex-direction:row; flex-wrap:wrap; align-items:center; }
+  .hud-left #nav-home{ border-bottom:none; padding:0; }
+  .hud-left .nav-links{ flex-direction:row; flex-wrap:wrap; gap:6px; }
+  .hud-left .nav-links button{ width:auto; text-align:center; }
+  .hud .widgets{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .world-mod{ display:none !important; }   /* phone: drop weather/markets/news/nasa */
+}
 </style>
 </head>
 <body class="theme-stars">
@@ -793,6 +838,8 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 </div>
 
 <div class="wrap hidden" id="appRoot">
+<div class="hud">
+<aside class="hud-left">
   <nav>
     <button id="nav-home">quest log</button>
     <div class="nav-links">
@@ -807,15 +854,6 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
   <div class="hero">
     <h1><em id="greeting">quest log</em></h1>
     <p id="greeting-sub">let's get something done today</p>
-  </div>
-
-  <div class="quote-banner">
-    <div class="quote-mark">"</div>
-    <div class="quote-banner-main">
-      <div class="quote-banner-text" id="quoteBannerText">add your first quote in the Quotes tab — words worth remembering, from anyone.</div>
-      <div class="quote-banner-author" id="quoteBannerAuthor"></div>
-    </div>
-    <button class="quote-banner-refresh" onclick="shuffleQuoteBanner()" title="show another">↻</button>
   </div>
 
   <div class="widgets">
@@ -842,6 +880,37 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <div class="big-stat-sub">auto-protects a missed daily streak</div>
     </div>
   </div>
+</aside>
+
+<aside class="hud-right">
+  <div class="quote-banner">
+    <div class="quote-mark">"</div>
+    <div class="quote-banner-main">
+      <div class="quote-banner-text" id="quoteBannerText">add your first quote in the Quotes tab — words worth remembering, from anyone.</div>
+      <div class="quote-banner-author" id="quoteBannerAuthor"></div>
+    </div>
+    <button class="quote-banner-refresh" onclick="shuffleQuoteBanner()" title="show another">↻</button>
+  </div>
+  <div class="dash-mod world-mod" id="mod-weather">
+    <div class="dash-label">Weather</div>
+    <div class="dash-wmain"><span class="dash-wtemp" id="wxTemp">--°</span><span class="dash-wdesc" id="wxDesc">loading…</span></div>
+    <div class="dash-sub" id="wxLoc">auto via IP</div>
+  </div>
+  <div class="dash-mod world-mod" id="mod-markets">
+    <div class="dash-label">Markets</div>
+    <div id="crypto"><div class="dash-sub">loading…</div></div>
+  </div>
+  <div class="dash-mod world-mod" id="mod-news">
+    <div class="dash-label">Tech news</div>
+    <div id="news"><div class="dash-sub">loading…</div></div>
+  </div>
+  <div class="dash-mod world-mod" id="mod-nasa">
+    <div class="dash-label">NASA · picture of the day</div>
+    <div id="apod"><div class="dash-sub">loading…</div></div>
+  </div>
+</aside>
+
+<main class="hud-center">
 
   <!-- QUESTS VIEW -->
   <div id="quests" class="view active">
@@ -1050,6 +1119,9 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <div class="info-note" style="margin-top:10px;">export downloads everything for this profile as JSON. import replaces this profile's data with a previously exported file (server keeps 7 daily backups as safety net).</div>
     </div>
   </div>
+
+  </main>
+</div><!-- /hud -->
 
   <datalist id="catList"></datalist>
 
@@ -2779,6 +2851,33 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
     if (profiles) { try { localStorage.removeItem('questLogProfile'); } catch (e) {} }
   }
   initProfileGate();
+})();
+
+/* ===== dashboard feeds (free APIs, graceful fallback) — redesign rebuild ===== */
+(function(){
+  const $=id=>document.getElementById(id);
+  async function loadCrypto(){const el=$('crypto'); if(!el) return; const fb=[['BTC',64210,2.3],['ETH',3140,-1.1],['SOL',148,4.6]];
+    try{const j=await(await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true')).json();
+      render(el,[['BTC',j.bitcoin.usd,j.bitcoin.usd_24h_change],['ETH',j.ethereum.usd,j.ethereum.usd_24h_change],['SOL',j.solana.usd,j.solana.usd_24h_change]]);}
+    catch(e){render(el,fb);}
+    function render(el,rows){el.innerHTML=rows.map(([s,p,c])=>{const up=c>=0;return `<div class="mkt-row"><span class="mkt-sym">${s}</span><span class="mkt-price"><div>$${Number(p).toLocaleString(undefined,{maximumFractionDigits:p<10?4:0})}</div><div class="mkt-chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(c).toFixed(1)}%</div></span></div>`;}).join('');}}
+  async function loadNews(){const el=$('news'); if(!el) return; const fb=[['Show HN: a self-hosted quest tracker','news.ycombinator.com',''],['The math behind gacha pity systems','arxiv.org',''],['Why monospace UIs are having a moment','css-tricks.com','']];
+    try{const ids=await(await fetch('https://hacker-news.firebaseio.com/v0/topstories.json')).json();
+      const items=await Promise.all(ids.slice(0,3).map(id=>fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(r=>r.json())));
+      render(el,items.map(it=>[it.title, it.url?new URL(it.url).hostname.replace('www.',''):'news.ycombinator.com', it.id]));}
+    catch(e){render(el,fb);}
+    function render(el,rows){el.innerHTML=rows.map(([t,h,id])=>`<a class="news-item" href="${id?'https://news.ycombinator.com/item?id='+id:'#'}" target="_blank" rel="noopener">${t}<div class="nmeta">${h}</div></a>`).join('');}}
+  async function loadApod(){const el=$('apod'); if(!el) return;
+    try{const j=await(await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&thumbs=true')).json();
+      const img=j.media_type==='image'?j.url:(j.thumbnail_url||''); el.innerHTML=`${img?`<img class="apod-img" src="${img}" alt="">`:''}<div class="apod-title">${j.title||'NASA APOD'}</div><div class="apod-desc">${j.explanation||''}</div>`;}
+    catch(e){el.innerHTML='<div class="apod-title">Pillars of Creation</div><div class="apod-desc">Star-forming towers in the Eagle Nebula. (Sample — live feed unavailable.)</div>';}}
+  async function loadWeather(){const t=$('wxTemp'),d=$('wxDesc'),l=$('wxLoc'); if(!t) return;
+    const CODE={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',51:'Drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',80:'Showers',95:'Storm'};
+    try{const g=await(await fetch('https://ipapi.co/json/')).json();
+      const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.latitude}&longitude=${g.longitude}&current=temperature_2m,weather_code`)).json();
+      t.textContent=Math.round(w.current.temperature_2m)+'°'; d.textContent=CODE[w.current.weather_code]||'—'; l.textContent=(g.city||'')+' · auto via IP';}
+    catch(e){t.textContent='24°'; d.textContent='Light rain'; l.textContent='—';}}
+  loadCrypto(); loadNews(); loadApod(); loadWeather();
 })();
 </script>
 </body>
