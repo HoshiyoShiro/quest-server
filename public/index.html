@@ -57,30 +57,29 @@ body.theme-rain {
   --scanline: rgba(0, 0, 0, 0.05);
 }
 body.theme-angels {
-  /* Angels of Delusion — Y2K cyber idol stage (dark): signal pink, chrome lilac, glowstick cyan */
-  color-scheme: dark;
-  --bg: #0a0a0c; --surface: #161217; --surface-2: #1f1926;
-  --border: #2a2531; --border-strong: #3d3646;
-  --ink: #f5f4f7; --dim: #88848f;
-  --accent: #ff3d9e; --accent-ink: #0a0a0c;
-  --accent-dim: rgba(255,61,158,0.16); --accent-border: rgba(255,61,158,0.45);
-  --good: #4defff; --danger: #ff5f8a;
-  --hshadow: rgba(0,0,0,0.55); --shadow: rgba(0,0,0,0.55);
-  --scanline: rgba(255,255,255,0.03);
+  /* Angels of Delusion — Y2K idol (light): signal pink on stage white, chrome lilac + glowstick cyan pop */
+  color-scheme: light;
+  --bg: #f4f1fa; --surface: #ffffff; --surface-2: #f1ecfa;
+  --border: #e6def0; --border-strong: #cdc2df;
+  --ink: #211a2b; --dim: #7d7690;
+  --accent: #ff3d9e; --accent-ink: #ffffff;
+  --accent-dim: rgba(255,61,158,0.12); --accent-border: rgba(255,61,158,0.40);
+  --good: #12aec2; --danger: #e0567a;
+  --hshadow: rgba(255,255,255,0.7); --shadow: rgba(150,120,180,0.22);
+  --scanline: rgba(120,90,150,0.03);
 }
 #angels-bg{ background:
-  radial-gradient(60% 50% at 14% 8%, rgba(255,61,158,.16), transparent 55%),     /* signal pink */
-  radial-gradient(60% 50% at 86% 10%, rgba(201,184,255,.12), transparent 55%),   /* chrome lilac */
-  radial-gradient(72% 56% at 55% 112%, rgba(77,239,255,.10), transparent 60%),   /* glowstick cyan */
-  linear-gradient(180deg, #0d0b10, #0a0a0c 60%, #060608); }
-.idol-glow{ position:absolute; border-radius:50%; filter:blur(80px); opacity:.55; animation:idolFloat 16s ease-in-out infinite; }
-.idol-glow.g1{ width:340px; height:340px; background:rgba(255,61,158,.55); top:6%; left:9%; }          /* signal pink */
+  radial-gradient(60% 50% at 14% 8%, rgba(255,61,158,.12), transparent 55%),     /* signal pink */
+  radial-gradient(60% 50% at 86% 10%, rgba(201,184,255,.18), transparent 55%),   /* chrome lilac */
+  radial-gradient(72% 56% at 55% 112%, rgba(77,239,255,.13), transparent 60%),   /* glowstick cyan */
+  linear-gradient(180deg, #faf7ff, #f4f1fa 60%, #efeaf7); }
+.idol-glow{ position:absolute; border-radius:50%; filter:blur(78px); opacity:.5; animation:idolFloat 16s ease-in-out infinite; }
+.idol-glow.g1{ width:330px; height:330px; background:rgba(255,61,158,.42); top:6%; left:9%; }          /* signal pink */
 .idol-glow.g2{ width:300px; height:300px; background:rgba(77,239,255,.4); bottom:8%; right:16%; animation-delay:-8s; }  /* glowstick cyan */
-.idol-glow.g3{ width:280px; height:280px; background:rgba(201,184,255,.42); top:5%; right:11%; animation-delay:-4s; }   /* chrome lilac */
+.idol-glow.g3{ width:280px; height:280px; background:rgba(201,184,255,.5); top:5%; right:11%; animation-delay:-4s; }   /* chrome lilac */
 @keyframes idolFloat{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(28px,-22px); } }
-/* neon glow on key display elements */
-body.theme-angels .brand, body.theme-angels .rank-num, body.theme-angels .big-stat{ text-shadow:0 0 12px rgba(255,61,158,.4); }
-body.theme-angels .rank-badge, body.theme-angels .cmd.primary, body.theme-angels .begin{ box-shadow:0 0 16px rgba(255,61,158,.32); }
+/* soft pink halo on key accents (subtle on light) */
+body.theme-angels .rank-badge, body.theme-angels .cmd.primary, body.theme-angels .begin{ box-shadow:0 0 16px rgba(255,61,158,.22); }
 
 body {
   font-family: var(--mono);
@@ -1483,7 +1482,7 @@ function checkAutoTheme() {
   updateGreeting();
 }
 
-const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14', angels: '#0a0a0c' };
+const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14', angels: '#f4f1fa' };
 
 function applyTheme(theme) {
   currentTheme = theme;
