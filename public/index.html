@@ -812,7 +812,8 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 @media (max-width:1000px){ .ov-wrap{ min-height:auto; padding:20px 0 8px; } }
 .ring-wrap{ position:relative; width:clamp(200px,24vw,240px); aspect-ratio:1; }
 .ring-wrap svg.ring{ position:absolute; inset:0; }
-.ring-wrap svg.ring circle{ transition:stroke .3s ease; animation:ring-pulse 2.6s ease-in-out infinite; }
+.ring-wrap svg.ring circle{ transition:stroke .3s ease; }
+.ring-wrap svg.ring{ animation:ring-pulse 2.6s ease-in-out infinite; }
 .ov-wrap .medallion{ position:absolute; inset:30px; background:var(--surface); border:1px solid var(--border-strong); display:grid; place-items:center; z-index:1;
   clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%); }
 /* rotating hex frame behind the medallion — spins continuously while the
