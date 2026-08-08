@@ -836,6 +836,19 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .rpt-label{ font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
 .journal-pad textarea{ min-height:56vh; line-height:1.7; }
 
+/* desktop: fixed viewport — rails pinned, only the center scrolls (no drift on page switch) */
+@media (min-width:1001px){
+  html, body{ height:100%; overflow:hidden; }
+  .wrap{ height:100vh; max-width:none; padding:20px; overflow:hidden; }
+  .hud{ height:100%; align-items:stretch; }
+  .hud-left, .hud-right{ position:static; align-self:stretch; grid-row:1; max-height:100%; overflow-y:auto; overflow-x:hidden; }
+  .hud-center{ align-self:stretch; grid-row:1; max-height:100%; overflow-y:auto; overflow-x:hidden; }
+  .hud-left::-webkit-scrollbar, .hud-right::-webkit-scrollbar, .hud-center::-webkit-scrollbar{ width:7px; }
+  .hud-left::-webkit-scrollbar-thumb, .hud-right::-webkit-scrollbar-thumb, .hud-center::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:4px; }
+  .hud-left, .hud-right, .hud-center{ scrollbar-width:thin; }
+  .ov-wrap{ min-height:100%; }
+}
+
 /* points dim until row hover */
 .quest-card .pts-badge{ color:var(--dim); background:transparent; border-color:var(--border); transition:color .15s, background .15s, border-color .15s; }
 .quest-card:hover .pts-badge{ color:var(--accent); background:var(--accent-dim); border-color:var(--accent-border); }
@@ -3057,6 +3070,7 @@ function ovBeginFocus(){ if(typeof ftRun!=='undefined' && !ftRun && typeof ftTog
 function newDailyQuick(){ showView('quests'); try{ showSubTab('quests','daily'); }catch(e){}
   var n=document.getElementById('dailyName'); if(n && n.offsetParent===null){ try{ toggleAddForm('dailyPanel'); }catch(e){} } if(n) n.focus(); }
 if (typeof render === 'function'){ var _ovOrigRender = render; render = function(){ _ovOrigRender.apply(this, arguments); try{ renderOverview(); }catch(e){} }; }
+if (typeof showView === 'function'){ var _svOrig = showView; showView = function(){ _svOrig.apply(this, arguments); var c=document.querySelector('.hud-center'); if(c) c.scrollTop=0; }; }
 
 /* ===== achievements recent-6 + show-all, and report today-summary — redesign ===== */
 function clampAch(){ var g=document.getElementById('achGrid'); if(!g) return; var n=g.children.length; var btn=document.getElementById('achToggle');
