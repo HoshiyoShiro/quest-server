@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quest Log — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* quest log "stars" theme — warm dark, gold accent */
+    --bg:#131009; --bg2:#1a150c; --surface:#1c1710; --surface-2:#262015;
+    --line:#3b3220; --line-2:#57492d;
+    --text:#f0e7d0; --dim:#998e76; --faint:#6f6552;
+    --accent:#e3b262; --accent-2:#efd39a; --accent-soft:rgba(227,178,98,.13); --accent-line:rgba(227,178,98,.34);
+    --good:#9bb56a; --danger:#d4755f;
+    --rare:#6ea8d8; --epic:#b98ad8; --legend:#e3b262; --common:#998e76;
+    --radius:12px; --radius-sm:9px;
+    --pixel:'Silkscreen','JetBrains Mono',ui-monospace,monospace;
+    --mono:'JetBrains Mono',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.7);
+  }
+  :root[data-theme="fog"]{
+    /* quest log "fog" theme — warm cream, slate accent */
+    --bg:#e9e5d8; --bg2:#efe9d9; --surface:#f0ece1; --surface-2:#e3ddcb;
+    --line:#cbc4ab; --line-2:#a49b7e;
+    --text:#2b2721; --dim:#6f6959; --faint:#8a836d;
+    --accent:#5d6d7e; --accent-2:#4c5b6b; --accent-soft:rgba(93,109,126,.12); --accent-line:rgba(93,109,126,.34);
+    --good:#5a7d3c; --danger:#b35644;
+    --rare:#4d7ba8; --epic:#8a5fb0; --legend:#5d6d7e; --common:#8a836d;
+    --shadow:0 1px 2px rgba(60,55,40,.12), 0 10px 26px -16px rgba(60,55,40,.4);
+  }
+  :root[data-theme="rain"]{
+    /* quest log "rain" theme — cool blue night, gold accent */
+    --bg:#0b0f14; --bg2:#0f151c; --surface:#11161e; --surface-2:#17202a;
+    --line:#28333f; --line-2:#3c4a58;
+    --text:#dfe7ef; --dim:#7d8b9c; --faint:#586a7d;
+    --accent:#79b8e0; --accent-2:#a6d2f0; --accent-soft:rgba(121,184,224,.14); --accent-line:rgba(121,184,224,.34);
+    --good:#82c98a; --danger:#d4755f;
+    --rare:#6ea8d8; --epic:#b98ad8; --legend:#79b8e0; --common:#7d8b9c;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 26px -16px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{font-family:var(--mono); color:var(--text); background:var(--bg); font-size:13.5px; line-height:1.5; overflow:hidden; -webkit-font-smoothing:antialiased;}
+
+  #bg{position:fixed; inset:0; z-index:0; overflow:hidden;
+    background:radial-gradient(90% 60% at 50% -10%, rgba(230,184,119,.06), transparent 60%), linear-gradient(180deg, var(--bg2), var(--bg));}
+  :root[data-theme="fog"] #bg{background:radial-gradient(90% 60% at 50% -10%, rgba(93,109,126,.08), transparent 60%), linear-gradient(180deg, var(--bg2), var(--bg));}
+  :root[data-theme="rain"] #bg{background:radial-gradient(90% 60% at 50% -8%, rgba(120,160,200,.10), transparent 60%), linear-gradient(180deg,#101923, var(--bg) 60%, #04070a);}
+  #rain{position:absolute; inset:0; opacity:.5;}
+
+  .ic{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0;}
+  .ic-sm{width:15px; height:15px;} .ic-lg{width:22px; height:22px;}
+  .num{font-variant-numeric:tabular-nums; font-feature-settings:"tnum";}
+  .label{font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); display:flex; align-items:center; gap:7px;}
+  .label::before{content:''; width:5px; height:5px; border-radius:1px; background:var(--accent);}
+  .label.plain::before{display:none;}
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);}
+  /* Silkscreen display type — the original quest-log pixel identity, used sparingly */
+  .brand,.clock,.vtitle,.rank-num,.rank-word,.stat-num,.act-pts,.wtemp,.tval,.core-title{font-family:var(--pixel); font-weight:400;}
+  .brand{letter-spacing:.12em;} .vtitle{letter-spacing:0;} .rank-num{font-weight:700;}
+  .core-title{font-size:15px; letter-spacing:.02em;}
+  .track{height:6px; border-radius:3px; background:var(--surface-2); overflow:hidden;}
+  .track>span{display:block; height:100%; border-radius:3px; background:var(--accent); transition:width .8s cubic-bezier(.4,0,.2,1);}
+  .track.good>span{background:var(--good);}
+
+  /* ===== shell ===== */
+  #hud{position:fixed; inset:0; z-index:2; display:grid; padding:22px; gap:20px;
+    grid-template-columns:290px minmax(0,1fr) 290px; grid-template-rows:minmax(0,1fr) auto;
+    grid-template-areas:"left center right" "dock dock dock";}
+  .rail{display:flex; flex-direction:column; gap:16px; min-height:0; overflow:auto;}
+  .r-left{grid-area:left;} .r-right{grid-area:right;}
+  #center{grid-area:center; min-height:0; overflow-y:auto; overflow-x:hidden; scrollbar-width:thin; scrollbar-gutter:stable both-edges; padding:2px 34px;}
+  .r-dock{grid-area:dock; align-self:end; justify-self:center;}
+
+  /* brand + clock */
+  .brand-card{text-align:center;}
+  .brand{font-size:12px; letter-spacing:.32em; color:var(--accent); font-weight:500;}
+  .clock{font-size:24px; font-weight:500; margin-top:8px;}
+  .cdate{font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); margin-top:3px;}
+  .cdate b{color:var(--accent); font-weight:500;}
+
+  /* player */
+  .who{display:flex; gap:13px; align-items:center;}
+  .avatar{width:42px; height:42px; flex-shrink:0; border-radius:11px; background:linear-gradient(150deg,var(--accent),var(--accent-2)); display:grid; place-items:center; color:var(--bg); font-weight:700; font-size:16px;}
+  .who .nm{font-size:14px; font-weight:500;} .who .rk{font-size:11px; color:var(--dim); margin-top:2px;}
+  .rows{margin-top:14px; display:flex; flex-direction:column; gap:11px;}
+  .row{display:flex; align-items:center; gap:11px; font-size:11.5px; color:var(--dim);}
+  .row .k{width:52px; flex-shrink:0;}
+
+  /* nav */
+  .navlist{display:flex; flex-direction:column; gap:4px;}
+  .nav{display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:var(--radius-sm); color:var(--dim); cursor:pointer; position:relative; border:1px solid transparent; transition:background .15s, color .15s;}
+  .nav .ic{color:var(--dim); transition:color .15s;} .nav .t{font-size:12.5px;}
+  .nav:hover{background:var(--surface-2); color:var(--text);} .nav:hover .ic{color:var(--text);}
+  .nav.active{background:var(--accent-soft); color:var(--accent); border-color:var(--accent-line);}
+  .nav.active .ic{color:var(--accent);}
+  .nav.active::before{content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:15px; border-radius:2px; background:var(--accent);}
+
+  /* treasury / timer / weather (right rail) */
+  .stat{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:12px; color:var(--dim);}
+  .stat:first-of-type{border-top:none;} .stat .v{display:flex; align-items:center; gap:8px; color:var(--text); font-weight:500;} .stat .v .ic{color:var(--accent);}
+  .timer .tval{font-size:28px; font-weight:500; margin-top:6px;}
+  .timer .tmode{font-size:11px; color:var(--dim); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .tctrl{display:flex; gap:8px; margin-top:12px;}
+  .tbtn{flex:1; background:transparent; border:1px solid var(--line-2); color:var(--text); border-radius:var(--radius-sm); font-family:var(--mono); font-size:11px; padding:8px; cursor:pointer; transition:.15s;}
+  .tbtn:hover{border-color:var(--accent); color:var(--accent);} .tbtn.primary{background:var(--accent); border-color:var(--accent); color:var(--bg); font-weight:500;}
+  .kbd{font-size:9px; color:var(--faint); border:1px solid var(--line); border-radius:4px; padding:1px 4px; margin-left:auto;}
+  .weather .wmain{display:flex; align-items:baseline; gap:9px; margin-top:6px;} .weather .wtemp{font-size:24px; font-weight:500;} .weather .wdesc{font-size:12px;}
+  .weather .wloc{font-size:11px; color:var(--dim); margin-top:6px; display:flex; align-items:center; gap:6px;}
+
+  /* markets / news / nasa dashboard modules */
+  .mkt-row{display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-top:1px solid var(--line); font-size:12px;}
+  .mkt-row:first-of-type{border-top:none;}
+  .mkt-sym{color:var(--text); font-weight:500; letter-spacing:.02em;}
+  .mkt-price{text-align:right; line-height:1.25;}
+  .mkt-chg{font-size:10px;} .up{color:var(--good);} .down{color:var(--danger);}
+  .news-item{display:block; padding:9px 0; border-top:1px solid var(--line); font-size:12px; color:var(--text); text-decoration:none; line-height:1.4;}
+  .news-item:first-of-type{border-top:none;} .news-item:hover{color:var(--accent);}
+  .news-item .nmeta{font-size:9.5px; color:var(--faint); margin-top:3px; letter-spacing:.02em;}
+  .apod img{width:100%; height:132px; object-fit:cover; border-radius:9px; margin-top:10px; background:var(--surface-2); display:block;}
+  .apod .at{font-size:12px; font-weight:500; margin-top:9px;}
+  .apod .ad{font-size:10.5px; color:var(--dim); margin-top:4px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+
+  /* ===== views ===== */
+  .view{display:none;} .view.active{display:block; animation:fadeUp .4s ease both;}
+  @keyframes fadeUp{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+  @media (prefers-reduced-motion:reduce){.view.active{animation:none}}
+  .vhead{margin-bottom:18px;}
+  .vtitle{font-size:22px; font-weight:500; letter-spacing:.01em;}
+  .vsub{font-size:11.5px; color:var(--dim); margin-top:4px;}
+  .tabs{display:inline-flex; gap:4px; margin-top:14px; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:4px;}
+  .tab{padding:7px 15px; border-radius:7px; font-size:12px; color:var(--dim); cursor:pointer; transition:.15s;}
+  .tab:hover{color:var(--text);} .tab.active{background:var(--accent-soft); color:var(--accent);}
+
+  /* overview */
+  #v-overview.view.active{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; text-align:center;}
+  .ring-wrap{position:relative; width:clamp(200px,26vh,248px); aspect-ratio:1;}
+  .ring-wrap svg.ring{position:absolute; inset:0;}
+  .ring-wrap svg.ring circle{transition:stroke .3s ease;}
+  .medallion{position:absolute; inset:32px; background:var(--surface); border:1px solid var(--line-2); display:grid; place-items:center;
+    clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%);}
+  .medallion::after{content:''; position:absolute; inset:5px; clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%); border:1px solid var(--accent-line); opacity:.5; pointer-events:none;}
+  .rank-num{font-size:clamp(44px,6vh,56px); font-weight:700; line-height:1; letter-spacing:-.02em;}
+  .rank-word{font-size:9.5px; letter-spacing:.3em; text-transform:uppercase; color:var(--dim); margin-top:5px;}
+  .rank-xp{font-size:10px; color:var(--faint); margin-top:7px;}
+  .core-eyebrow{margin-top:20px; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent);}
+  .core-title{margin-top:8px; font-size:18px; font-weight:500;} .core-sub{margin-top:6px; font-size:12px; color:var(--dim);}
+  .week{display:flex; gap:7px; justify-content:center; margin-top:18px;}
+  .wd{width:11px; height:11px; border-radius:3px; background:var(--surface-2); border:1px solid var(--line);}
+  .wd.on{background:var(--accent); border-color:var(--accent);} .wd.today{box-shadow:0 0 0 2px var(--accent-line);}
+  .begin{margin-top:20px; display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:var(--bg); border:none; border-radius:11px; padding:11px 22px; font-family:var(--mono); font-size:12px; font-weight:600; cursor:pointer; transition:.12s;}
+  .begin:hover{opacity:.92;} .begin:active{transform:scale(.98);}
+
+  /* quests */
+  .activity{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px; margin-bottom:16px;}
+  .act-top{display:flex; align-items:baseline; justify-content:space-between;}
+  .act-pts{font-size:20px; font-weight:600; color:var(--accent);}
+  /* activity progress bar with milestone markers */
+  .ameter{position:relative; height:56px; margin-top:16px;}
+  .am-track{position:absolute; left:0; right:0; top:21px; height:8px;}
+  .am-track>span{background:linear-gradient(90deg,var(--accent-2),var(--accent));}
+  .am-mark{position:absolute; top:0; transform:translateX(-50%); width:0;}
+  .am-tick{position:absolute; top:18px; left:-1.5px; width:3px; height:14px; border-radius:2px; background:var(--line-2);}
+  .am-mark.hit .am-tick{background:var(--accent);}
+  .am-rw{position:absolute; top:-1px; left:0; transform:translateX(-50%); font-size:11px; filter:grayscale(1) opacity(.5);}
+  .am-mark.hit .am-rw{filter:none;}
+  .am-lbl{position:absolute; top:38px; left:0; transform:translateX(-50%); font-size:9.5px; color:var(--faint); white-space:nowrap;}
+  .am-mark.hit .am-lbl{color:var(--accent);}
+  .qsec-head{display:flex; align-items:center; justify-content:space-between; margin:6px 0 10px;}
+  .addbtn{background:var(--surface-2); border:1px solid var(--line-2); color:var(--dim); border-radius:8px; font-family:var(--mono); font-size:11px; padding:6px 12px; cursor:pointer; transition:.15s;}
+  .addbtn:hover{border-color:var(--accent); color:var(--accent);}
+  .qadd{display:none; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+  .qadd.open{display:flex;}
+  .inp{background:var(--bg); border:1px solid var(--line-2); border-radius:8px; padding:9px 11px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none;}
+  .inp:focus{border-color:var(--accent);}
+  .inp.name{flex:1; min-width:150px;} .inp.cat{width:130px;} .inp.pts{width:64px; text-align:center;}
+  .inp-btn{background:var(--accent); color:var(--bg); border:none; border-radius:8px; font-weight:500; padding:0 14px; cursor:pointer; font-family:var(--mono); font-size:12px;}
+  .qlist{display:flex; flex-direction:column; gap:2px;}
+  .q{display:flex; align-items:center; gap:11px; padding:11px 10px; border-radius:var(--radius-sm); cursor:pointer; position:relative; transition:background .15s, opacity .2s;}
+  .q:hover{background:var(--surface-2);} .q.focus{background:var(--accent-soft);}
+  .q.focus::before{content:''; position:absolute; left:0; top:8px; bottom:8px; width:2px; border-radius:2px; background:var(--accent);}
+  .box{width:19px; height:19px; flex-shrink:0; border-radius:6px; border:1.5px solid var(--line-2); display:grid; place-items:center; color:var(--bg); transition:.15s;}
+  .q.done{opacity:.42;} .q.done .box{background:var(--good); border-color:var(--good);}
+  .qmain{flex:1; min-width:0;} .qn{font-size:12.5px;} .q.done .qn{text-decoration:line-through;}
+  .qmeta{display:flex; gap:6px; margin-top:4px; align-items:center;}
+  .wpill{display:flex; gap:3px;} .wpill i{width:6px; height:6px; border-radius:1px; background:var(--line-2); display:block;} .wpill i.on{background:var(--accent);}
+  .qcat{font-size:9.5px; color:var(--faint); letter-spacing:.04em;}
+  .qtier{font-size:8.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); border:1px solid var(--line); border-radius:4px; padding:2px 5px;}
+  .qp{font-size:11.5px; color:var(--faint); font-weight:500; min-width:32px; text-align:right; transition:color .15s;}
+  .q:hover .qp{color:var(--accent);}
+
+  /* season */
+  .spass-top{display:flex; align-items:baseline; justify-content:space-between; margin-top:4px;}
+  .strack{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; padding:8px 0 12px; margin-top:8px;}
+  .snode{border:1px solid var(--line); border-radius:var(--radius); padding:14px; background:var(--surface); text-align:center; position:relative;}
+  .snode.unlocked{border-color:var(--accent-line); background:var(--accent-soft);}
+  .snode .tier{font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim);}
+  .snode .ricon{width:38px; height:38px; margin:10px auto 8px; border-radius:10px; background:var(--surface-2); display:grid; place-items:center; color:var(--accent);}
+  .snode.unlocked .ricon{background:var(--accent); color:var(--bg);}
+  .snode.locked .ricon{color:var(--faint);}
+  .snode .rname{font-size:11px;} .snode .rreq{font-size:10px; color:var(--faint); margin-top:4px;}
+  .snode .lock{position:absolute; top:8px; right:9px; color:var(--faint);}
+
+  /* shop */
+  .sgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .reward{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:var(--surface); display:flex; flex-direction:column; gap:10px;}
+  .rar{align-self:flex-start; font-size:9px; letter-spacing:.1em; text-transform:uppercase; padding:3px 8px; border-radius:5px; border:1px solid;}
+  .rar.common{color:var(--common); border-color:var(--common);}
+  .rar.rare{color:var(--rare); border-color:var(--rare);}
+  .rar.epic{color:var(--epic); border-color:var(--epic);}
+  .rar.legendary{color:var(--legend); border-color:var(--legend); background:var(--accent-soft);}
+  .reward .rn{font-size:14px; font-weight:500;}
+  .reward .rd{font-size:11.5px; color:var(--dim);}
+  .reward .rfoot{display:flex; align-items:center; justify-content:space-between; margin-top:auto; padding-top:6px;}
+  .rcost{display:flex; align-items:center; gap:6px; color:var(--accent); font-weight:600;}
+  .redeem{background:var(--accent); color:var(--bg); border:none; border-radius:8px; font-family:var(--mono); font-size:11px; font-weight:600; padding:8px 14px; cursor:pointer; transition:.15s;}
+  .redeem:hover{opacity:.9;} .redeem[disabled]{background:var(--surface-2); color:var(--faint); cursor:not-allowed;}
+  .hist{margin-top:20px;} .hrow{display:flex; justify-content:space-between; padding:9px 0; border-top:1px solid var(--line); font-size:12px; color:var(--dim);}
+  .hrow b{color:var(--text); font-weight:500;}
+
+  /* quotes */
+  .qgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px;}
+  .quote{border:1px solid var(--line); border-radius:var(--radius); padding:18px; background:var(--surface); position:relative;}
+  .quote .mk{font-size:34px; color:var(--accent-line); line-height:.5; margin-bottom:6px;}
+  .quote .qt{font-size:13.5px; line-height:1.6; font-style:italic;}
+  .quote .qa{font-size:11px; color:var(--dim); margin-top:12px;}
+
+  /* profile */
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px;}
+  .stat-card{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:var(--surface);}
+  .stat-num{font-size:26px; font-weight:600; letter-spacing:-.01em;}
+  .stat-label{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-top:5px;}
+  .ach-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;}
+  .ach{border:1px solid var(--line); border-radius:var(--radius); padding:14px; background:var(--surface); display:flex; gap:11px; align-items:center;}
+  .ach.locked{opacity:.5;}
+  .ach .ai{width:34px; height:34px; border-radius:9px; background:var(--accent-soft); color:var(--accent); display:grid; place-items:center; flex-shrink:0;}
+  .ach.locked .ai{background:var(--surface-2); color:var(--faint);}
+  .ach .an{font-size:12px; font-weight:500;} .ach .ad{font-size:10px; color:var(--dim); margin-top:2px;}
+  .loginrow{display:flex; gap:7px; margin-top:4px;}
+  .heat{display:grid; grid-auto-flow:column; grid-template-rows:repeat(7,11px); grid-auto-columns:11px; gap:3px; margin-top:6px; justify-content:start; overflow-x:auto; padding-bottom:4px;}
+  .hc{width:11px; height:11px; border-radius:2px; background:var(--surface-2);}
+  .hc.l1{background:color-mix(in srgb, var(--accent) 24%, transparent);}
+  .hc.l2{background:color-mix(in srgb, var(--accent) 45%, transparent);}
+  .hc.l3{background:color-mix(in srgb, var(--accent) 68%, transparent);}
+  .hc.l4{background:color-mix(in srgb, var(--accent) 92%, transparent);}
+  .bars{display:flex; flex-direction:column; gap:10px; margin-top:4px;}
+  .bar-row{display:flex; align-items:center; gap:12px; font-size:11.5px;}
+  .bar-row .bk{width:80px; color:var(--dim); flex-shrink:0;}
+  .bar-row .bt{flex:1;} .bar-row .bv{width:34px; text-align:right; color:var(--dim);}
+  .section-gap{margin-top:22px;}
+
+  /* settings switches */
+  .mod-off{display:none!important;}
+  .setlist{margin-top:10px;}
+  .setrow{display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-top:1px solid var(--line); font-size:13px; cursor:pointer;}
+  .setrow:first-child{border-top:none;}
+  .sw{position:relative; width:38px; height:22px; flex-shrink:0;}
+  .sw input{position:absolute; opacity:0; width:100%; height:100%; margin:0; cursor:pointer;}
+  .sw i{position:absolute; inset:0; background:var(--surface-2); border:1px solid var(--line-2); border-radius:999px; transition:.2s;}
+  .sw i::after{content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--dim); transition:.2s;}
+  .sw input:checked + i{background:var(--accent-soft); border-color:var(--accent-line);}
+  .sw input:checked + i::after{transform:translateX(16px); background:var(--accent);}
+
+  /* dock */
+  .r-dock{display:flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:7px; box-shadow:var(--shadow);}
+  .cmd{display:flex; flex-direction:column; align-items:center; gap:5px; padding:9px 15px; border-radius:11px; color:var(--dim); cursor:pointer; transition:.12s;}
+  .cmd .cl{font-size:9.5px; letter-spacing:.05em; text-transform:uppercase;}
+  .cmd:hover{background:var(--surface-2); color:var(--text);}
+  .cmd.primary{background:var(--accent); color:var(--bg); padding:10px 20px;} .cmd.primary .cl{font-weight:600;}
+  .cmd.primary:hover{opacity:.92; color:var(--bg); background:var(--accent);}
+  .dock-sep{width:1px; height:26px; background:var(--line); margin:0 2px;}
+
+  #theme{position:fixed; right:22px; bottom:22px; z-index:6; width:36px; height:36px; display:grid; place-items:center; border-radius:11px; background:var(--surface); border:1px solid var(--line); color:var(--dim); cursor:pointer; box-shadow:var(--shadow); transition:.15s;}
+  #theme:hover{color:var(--accent); border-color:var(--accent-line);}
+  .confetti{position:fixed; width:7px; height:7px; border-radius:1px; pointer-events:none; z-index:50; will-change:transform,opacity;}
+  .toast{position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(10px); z-index:60; background:var(--surface); border:1px solid var(--accent-line); color:var(--text); border-radius:10px; padding:11px 18px; font-size:12px; box-shadow:var(--shadow); opacity:0; transition:.3s;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (max-width:1080px){
+    html,body{overflow-x:hidden;} body{overflow-y:auto;}
+    #hud{position:relative; inset:auto; width:100%; max-width:100vw; overflow-x:hidden; min-height:100vh; padding:14px 14px 88px; gap:14px;
+      grid-template-columns:minmax(0,1fr); grid-template-rows:none; grid-template-areas:"left" "center" "right";}
+    .view,.rail,.q,.qmain,.reward,.quote,.stat-card,.ach{min-width:0;}
+    .qn,.core-title,.vsub,.rd,.qt{overflow-wrap:anywhere;}
+    .activity{overflow:hidden;}
+    .rail{overflow:visible;} #center{overflow:visible; padding:0;}
+    .r-left,.r-right,#center{max-width:640px; width:100%; margin:0 auto;}
+    #theme{display:grid; position:fixed; top:14px; right:14px; bottom:auto; z-index:30;}
+    /* left rail: brand small, then nav as a horizontal scrolling tab bar, then player */
+    .r-left{gap:12px;}
+    .r-left .navlist{order:-1; display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:6px;}
+    .r-left .nav{flex-direction:column; gap:5px; padding:11px 6px; border-radius:9px; text-align:center; justify-content:center;}
+    .r-left .nav .ic{margin:0 auto;}
+    .r-left .nav .t{font-size:11px;}
+    .r-left .nav.active::before{display:none;}
+    .brand-card{order:-2;}
+    /* dock → single floating "New quest" pill */
+    .r-dock{position:fixed; right:16px; left:auto; bottom:16px; transform:none; z-index:20; background:none; border:none; box-shadow:none; padding:0; gap:0;}
+    .r-dock .cmd:not(.primary), .r-dock .dock-sep{display:none;}
+    .r-dock .cmd.primary{flex-direction:row; gap:8px; border-radius:999px; padding:13px 22px; box-shadow:0 6px 20px -6px rgba(0,0,0,.5);}
+    .r-dock .cmd.primary .cl{font-size:11px;} .r-dock .cmd.primary .cl span{display:none;}
+    #v-overview.view.active{min-height:auto; padding:12px 0 6px;}
+    .vtitle{font-size:20px;}
+    .world-mod, #mod-timer{display:none!important;}   /* phone: drop weather/markets/news/nasa + timer — focus on quests & stats */
+    .sgrid,.qgrid,.stat-grid,.ach-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+  }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="i-overview" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 13l4-3"/><circle cx="12" cy="13" r="1.4"/></symbol>
+  <symbol id="i-quests" viewBox="0 0 24 24"><path d="M5 6h9M5 12h9M5 18h6"/><path d="M17 5l2 2 3-3"/></symbol>
+  <symbol id="i-season" viewBox="0 0 24 24"><path d="M12 4l1.9 4.9L19 10l-5.1 1.1L12 16l-1.9-4.9L5 10l5.1-1.1z"/></symbol>
+  <symbol id="i-shop" viewBox="0 0 24 24"><path d="M6.5 8h11l-1 11.5h-9z"/><path d="M9.2 8a2.8 2.8 0 0 1 5.6 0"/></symbol>
+  <symbol id="i-quotes" viewBox="0 0 24 24"><path d="M5 6h14v9H9l-4 3.5z"/></symbol>
+  <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4.2l2.8 1.8"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 4.5c3.6 4.5 5 6.6 5 9a5 5 0 0 1-10 0c0-2.4 1.4-4.5 5-9z"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 4c1.2 3 4 4.2 4 7.8A4 4 0 0 1 8 12c0-1 .4-2 1.4-2.8C10.4 9.6 12 8 12 4z"/></symbol>
+  <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 4v16M5 8l14 8M19 8L5 16"/></symbol>
+  <symbol id="i-gem" viewBox="0 0 24 24"><path d="M6.5 9l2.5-4h6l2.5 4-5.5 10z"/><path d="M6.5 9h11"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6-5 6-10a6 6 0 0 0-12 0c0 5 6 10 6 10z"/><circle cx="12" cy="11" r="2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 5h10v3a5 5 0 0 1-10 0z"/><path d="M12 13v4M9 20h6M5 6H3v1a3 3 0 0 0 3 3M19 6h2v1a3 3 0 0 1-3 3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="6" y="11" width="12" height="9" rx="2"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16c1 0 1.5-1 1-2s0-2 1-2h2a4 4 0 0 0 4-4c0-3.5-3.6-6-8-6z"/><circle cx="8.5" cy="11" r="1"/><circle cx="12" cy="8.5" r="1"/><circle cx="15.5" cy="11" r="1"/></symbol>
+  <symbol id="i-coffee" viewBox="0 0 24 24"><path d="M5 8h12v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/><path d="M17 9h2a2 2 0 0 1 0 4h-2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 4l2.2 5.5L20 10l-4.3 3.8L17 20l-5-3-5 3 1.3-6.2L4 10l5.8-.5z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6L17 7M7 17l-1.4 1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 4v2M12 18v2M4.9 7.5l1.8 1M17.3 15.5l1.8 1M4.9 16.5l1.8-1M17.3 8.5l1.8-1"/></symbol>
+</defs></svg>
+
+<div id="bg"><canvas id="rain"></canvas></div>
+
+<div id="hud">
+  <!-- LEFT RAIL -->
+  <div class="rail r-left">
+    <div class="card brand-card">
+      <div class="brand">QUEST&nbsp;LOG</div>
+      <div class="clock num" id="clock">--:--</div>
+      <div class="cdate" id="cdate">loading…</div>
+    </div>
+    <div class="card">
+      <div class="who"><div class="avatar">H</div><div style="flex:1;min-width:0"><div class="nm">Hoshy</div><div class="rk">Rank 7 · Adept</div></div></div>
+      <div class="rows">
+        <div class="row"><span class="k">XP</span><div class="track"><span style="width:64%"></span></div></div>
+        <div class="row"><span class="k">Weekly</span><div class="track good"><span style="width:60%"></span></div></div>
+      </div>
+    </div>
+    <nav class="card navlist" style="padding:8px;">
+      <div class="nav active" data-view="overview" onclick="go(this)"><svg class="ic"><use href="#i-overview"/></svg><span class="t">Overview</span></div>
+      <div class="nav" data-view="quests" onclick="go(this)"><svg class="ic"><use href="#i-quests"/></svg><span class="t">Quests</span></div>
+      <div class="nav" data-view="season" onclick="go(this)"><svg class="ic"><use href="#i-season"/></svg><span class="t">Season</span></div>
+      <div class="nav" data-view="shop" onclick="go(this)"><svg class="ic"><use href="#i-shop"/></svg><span class="t">Shop</span></div>
+      <div class="nav" data-view="quotes" onclick="go(this)"><svg class="ic"><use href="#i-quotes"/></svg><span class="t">Quotes</span></div>
+      <div class="nav" data-view="profile" onclick="go(this)"><svg class="ic"><use href="#i-profile"/></svg><span class="t">Profile</span></div>
+      <div class="nav" data-view="settings" onclick="go(this)"><svg class="ic"><use href="#i-gear"/></svg><span class="t">Settings</span></div>
+    </nav>
+    <div class="card apod mod world-mod" id="mod-nasa">
+      <div class="label"><svg class="ic ic-sm" style="stroke:var(--accent)"><use href="#i-star"/></svg> NASA · Picture of the day</div>
+      <div id="apod"><div style="color:var(--dim); font-size:12px; margin-top:10px">loading…</div></div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div id="center">
+    <!-- OVERVIEW -->
+    <section id="v-overview" class="view active">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" id="ringsvg"></svg>
+        <div class="medallion"><div><div class="rank-num num">7</div><div class="rank-word">Rank</div><div class="rank-xp num" id="rank-daily">0 / 5 today</div></div></div>
+      </div>
+      <div class="core-eyebrow">Focus quest</div>
+      <div class="core-title">Ship the calendar fix</div>
+      <div class="core-sub">+50 points · due today</div>
+      <div class="week" id="week"></div>
+      <button class="begin" onclick="beginFocus()"><svg class="ic ic-sm" style="stroke:currentColor"><use href="#i-play"/></svg> Begin focus session</button>
+    </section>
+
+    <!-- QUESTS -->
+    <section id="v-quests" class="view">
+      <div class="vhead"><div class="vtitle">Quests</div><div class="vsub">Build streaks. Daily resets at 4am, weekly on Monday.</div>
+        <div class="tabs"><span class="tab active" data-qtab="daily" onclick="qtab(this)">Daily</span><span class="tab" data-qtab="weekly" onclick="qtab(this)">Weekly</span></div>
+      </div>
+      <div id="qt-daily">
+        <div class="activity">
+          <div class="act-top"><div class="label plain">Daily activity · resets in 6h</div><div class="act-pts num">180<span style="font-size:12px;color:var(--dim)"> / 400 pts today</span></div></div>
+          <div class="ameter">
+            <div class="track am-track"><span style="width:45%"></span></div>
+            <div class="am-mark hit" style="left:12.5%"><span class="am-rw">✦</span><span class="am-tick"></span><span class="am-lbl">50</span></div>
+            <div class="am-mark hit" style="left:25%"><span class="am-rw">✦</span><span class="am-tick"></span><span class="am-lbl">100</span></div>
+            <div class="am-mark hit" style="left:37.5%"><span class="am-rw">✦</span><span class="am-tick"></span><span class="am-lbl">150</span></div>
+            <div class="am-mark" style="left:62.5%"><span class="am-rw">🎁</span><span class="am-tick"></span><span class="am-lbl">250</span></div>
+            <div class="am-mark" style="left:100%"><span class="am-tick"></span><span class="am-lbl">400</span></div>
+          </div>
+        </div>
+        <div class="qsec-head"><div class="label">Daily quests</div><button class="addbtn" onclick="addForm('add-daily')">+ add daily</button></div>
+        <div class="qadd" id="add-daily"><input class="inp name" placeholder="new daily quest (e.g. read 20 min)"><input class="inp cat" placeholder="category"><input class="inp pts num" placeholder="pts" value="20"><button class="inp-btn" onclick="addForm('add-daily')">Add</button></div>
+        <div class="qlist" id="daily-list">
+          <div class="q focus" data-pts="50" onclick="toggleQuest(this)"><span class="box"></span><div class="qmain"><div class="qn">Ship the calendar fix</div><div class="qmeta"><span class="wpill"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="qcat">work</span></div></div><span class="qtier">Hard</span><span class="qp num">+50</span></div>
+          <div class="q" data-pts="40" onclick="toggleQuest(this)"><span class="box"></span><div class="qmain"><div class="qn">Workout — push day</div><div class="qmeta"><span class="wpill"><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i></span><span class="qcat">body</span></div></div><span class="qtier">Normal</span><span class="qp num">+40</span></div>
+          <div class="q" data-pts="15" onclick="toggleQuest(this)"><span class="box"></span><div class="qmain"><div class="qn">Journal — 5 lines</div><div class="qmeta"><span class="wpill"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><span class="qcat">mind</span></div></div><span class="qtier">Easy</span><span class="qp num">+15</span></div>
+          <div class="q done" data-pts="20" onclick="toggleQuest(this)"><span class="box"><svg class="ic ic-sm"><use href="#i-check"/></svg></span><div class="qmain"><div class="qn">Read 20 minutes</div><div class="qmeta"><span class="qcat">mind</span></div></div><span class="qtier">Easy</span><span class="qp num">+20</span></div>
+          <div class="q done" data-pts="10" onclick="toggleQuest(this)"><span class="box"><svg class="ic ic-sm"><use href="#i-check"/></svg></span><div class="qmain"><div class="qn">Water + vitamins</div><div class="qmeta"><span class="qcat">health</span></div></div><span class="qtier">Easy</span><span class="qp num">+10</span></div>
+        </div>
+      </div>
+      <div id="qt-weekly" style="display:none">
+        <div class="activity">
+          <div class="act-top"><div class="label plain">Weekly activity · resets Monday</div><div class="act-pts num">220<span style="font-size:12px;color:var(--dim)"> / 500 pts this week</span></div></div>
+          <div class="ameter">
+            <div class="track am-track"><span style="width:44%"></span></div>
+            <div class="am-mark hit" style="left:20%"><span class="am-rw">✦</span><span class="am-tick"></span><span class="am-lbl">100</span></div>
+            <div class="am-mark hit" style="left:40%"><span class="am-rw">✦</span><span class="am-tick"></span><span class="am-lbl">200</span></div>
+            <div class="am-mark" style="left:70%"><span class="am-rw">🎁</span><span class="am-tick"></span><span class="am-lbl">350</span></div>
+            <div class="am-mark" style="left:100%"><span class="am-tick"></span><span class="am-lbl">500</span></div>
+          </div>
+        </div>
+        <div class="qsec-head"><div class="label">Weekly quests</div><button class="addbtn" onclick="addForm('add-weekly')">+ add weekly</button></div>
+        <div class="qadd" id="add-weekly"><input class="inp name" placeholder="new weekly quest (e.g. deep-clean the room)"><input class="inp cat" placeholder="category"><input class="inp pts num" placeholder="pts" value="60"><button class="inp-btn" onclick="addForm('add-weekly')">Add</button></div>
+        <div class="qlist" id="weekly-list">
+          <div class="q" data-pts="80" onclick="toggleQuest(this)"><span class="box"></span><div class="qmain"><div class="qn">Deep-clean the room</div><div class="qmeta"><span class="qcat">home</span></div></div><span class="qtier">Hard</span><span class="qp num">+80</span></div>
+          <div class="q" data-pts="60" onclick="toggleQuest(this)"><span class="box"></span><div class="qmain"><div class="qn">Meal-prep for the week</div><div class="qmeta"><span class="qcat">health</span></div></div><span class="qtier">Normal</span><span class="qp num">+60</span></div>
+          <div class="q done" data-pts="50" onclick="toggleQuest(this)"><span class="box"><svg class="ic ic-sm"><use href="#i-check"/></svg></span><div class="qmain"><div class="qn">Publish a blog post</div><div class="qmeta"><span class="qcat">work</span></div></div><span class="qtier">Normal</span><span class="qp num">+50</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEASON -->
+    <section id="v-season" class="view">
+      <div class="vhead"><div class="vtitle">Season Pass</div><div class="vsub">The Long Winter · Season 3 · Day 128 of 180</div></div>
+      <div class="card">
+        <div class="spass-top"><div class="label plain">Season XP</div><div class="num" style="color:var(--dim);font-size:12px">3,480 / 5,000 XP · Tier 12</div></div>
+        <div class="track" style="margin-top:10px"><span style="width:70%"></span></div>
+      </div>
+      <div class="label" style="margin:20px 0 4px">Reward track</div>
+      <div class="strack">
+        <div class="snode unlocked"><div class="tier">Tier 10</div><div class="ricon"><svg class="ic"><use href="#i-snow"/></svg></div><div class="rname">+1 Streak freeze</div><div class="rreq">claimed</div></div>
+        <div class="snode unlocked"><div class="tier">Tier 11</div><div class="ricon"><svg class="ic"><use href="#i-gem"/></svg></div><div class="rname">200 points</div><div class="rreq">claimed</div></div>
+        <div class="snode unlocked"><div class="tier">Tier 12</div><div class="ricon"><svg class="ic"><use href="#i-palette"/></svg></div><div class="rname">Aurora theme</div><div class="rreq">ready to claim</div></div>
+        <div class="snode locked"><div class="lock"><svg class="ic ic-sm"><use href="#i-lock"/></svg></div><div class="tier">Tier 13</div><div class="ricon"><svg class="ic"><use href="#i-ticket"/></svg></div><div class="rname">Skip-day token</div><div class="rreq">+320 XP</div></div>
+        <div class="snode locked"><div class="lock"><svg class="ic ic-sm"><use href="#i-lock"/></svg></div><div class="tier">Tier 14</div><div class="ricon"><svg class="ic"><use href="#i-gem"/></svg></div><div class="rname">500 points</div><div class="rreq">+820 XP</div></div>
+        <div class="snode locked"><div class="lock"><svg class="ic ic-sm"><use href="#i-lock"/></svg></div><div class="tier">Tier 15</div><div class="ricon"><svg class="ic"><use href="#i-trophy"/></svg></div><div class="rname">Season badge</div><div class="rreq">+1520 XP</div></div>
+      </div>
+    </section>
+
+    <!-- SHOP -->
+    <section id="v-shop" class="view">
+      <div class="vhead"><div class="vtitle">Reward Shop</div><div class="vsub">Spend points on things that make the grind worth it. Balance: <b style="color:var(--accent)">1,240</b></div></div>
+      <div class="sgrid">
+        <div class="reward"><span class="rar common">Common</span><div class="rn">Coffee run</div><div class="rd">A proper flat white, guilt-free.</div><div class="rfoot"><span class="rcost"><svg class="ic ic-sm"><use href="#i-gem"/></svg>150</span><button class="redeem" onclick="redeem(this,'Coffee run')">Redeem</button></div></div>
+        <div class="reward"><span class="rar rare">Rare</span><div class="rn">+1 Streak freeze</div><div class="rd">Protects a missed day automatically.</div><div class="rfoot"><span class="rcost"><svg class="ic ic-sm"><use href="#i-gem"/></svg>300</span><button class="redeem" onclick="redeem(this,'Streak freeze')">Redeem</button></div></div>
+        <div class="reward"><span class="rar epic">Epic</span><div class="rn">Skip-day token</div><div class="rd">Take a full rest day, no streak loss.</div><div class="rfoot"><span class="rcost"><svg class="ic ic-sm"><use href="#i-gem"/></svg>800</span><button class="redeem" disabled>Need 800</button></div></div>
+        <div class="reward"><span class="rar legendary">Legendary</span><div class="rn">Weekend away</div><div class="rd">The big one. Two days, fully off.</div><div class="rfoot"><span class="rcost"><svg class="ic ic-sm"><use href="#i-gem"/></svg>2,500</span><button class="redeem" disabled>Need 2,500</button></div></div>
+        <div class="reward"><span class="rar common">Common</span><div class="rn">One episode</div><div class="rd">Guilt-free show time.</div><div class="rfoot"><span class="rcost"><svg class="ic ic-sm"><use href="#i-gem"/></svg>120</span><button class="redeem" onclick="redeem(this,'One episode')">Redeem</button></div></div>
+        <div class="reward"><span class="rar rare">Rare</span><div class="rn">New book</div><div class="rd">Add one to the pile.</div><div class="rfoot"><span class="rcost"><svg class="ic ic-sm"><use href="#i-gem"/></svg>450</span><button class="redeem" onclick="redeem(this,'New book')">Redeem</button></div></div>
+      </div>
+      <div class="hist"><div class="label">Redemption history</div>
+        <div class="hrow"><span>Coffee run</span><b class="num">−150 · 2d ago</b></div>
+        <div class="hrow"><span>One episode</span><b class="num">−120 · 5d ago</b></div>
+        <div class="hrow"><span>+1 Streak freeze</span><b class="num">−300 · last week</b></div>
+      </div>
+    </section>
+
+    <!-- QUOTES -->
+    <section id="v-quotes" class="view">
+      <div class="vhead"><div class="vtitle">Quotes</div><div class="vsub">Words worth keeping — from anyone.</div>
+        <div class="tabs"><span class="tab active">All</span></div>
+      </div>
+      <div class="qgrid">
+        <div class="quote"><div class="mk">“</div><div class="qt">Discipline is choosing between what you want now and what you want most.</div><div class="qa">— Abraham Lincoln</div></div>
+        <div class="quote"><div class="mk">“</div><div class="qt">You do not rise to the level of your goals. You fall to the level of your systems.</div><div class="qa">— James Clear</div></div>
+        <div class="quote"><div class="mk">“</div><div class="qt">The secret of getting ahead is getting started.</div><div class="qa">— Mark Twain</div></div>
+        <div class="quote"><div class="mk">“</div><div class="qt">Small things done consistently become big things.</div><div class="qa">— unknown</div></div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section id="v-profile" class="view">
+      <div class="vhead"><div class="vtitle">Profile</div><div class="vsub">Your record — 128 days in.</div>
+        <div class="tabs"><span class="tab active" data-ptab="overview" onclick="ptab(this)">Overview</span><span class="tab" data-ptab="charts" onclick="ptab(this)">Charts</span><span class="tab" data-ptab="report" onclick="ptab(this)">Report</span></div>
+      </div>
+      <div id="pt-overview">
+        <div class="label">Login streak</div>
+        <div class="loginrow" id="loginrow"></div>
+        <div class="label section-gap">Achievements · 6 / 12</div>
+        <div class="ach-grid" style="margin-top:10px">
+          <div class="ach"><div class="ai"><svg class="ic"><use href="#i-flame"/></svg></div><div><div class="an">On Fire</div><div class="ad">14-day streak</div></div></div>
+          <div class="ach"><div class="ai"><svg class="ic"><use href="#i-star"/></svg></div><div><div class="an">Centurion</div><div class="ad">100 quests done</div></div></div>
+          <div class="ach"><div class="ai"><svg class="ic"><use href="#i-trophy"/></svg></div><div><div class="an">Season Vet</div><div class="ad">Finish a season</div></div></div>
+          <div class="ach locked"><div class="ai"><svg class="ic"><use href="#i-lock"/></svg></div><div><div class="an">Untouchable</div><div class="ad">30-day streak</div></div></div>
+          <div class="ach locked"><div class="ai"><svg class="ic"><use href="#i-lock"/></svg></div><div><div class="an">Big Spender</div><div class="ad">Redeem 2,500 pts</div></div></div>
+          <div class="ach locked"><div class="ai"><svg class="ic"><use href="#i-lock"/></svg></div><div><div class="an">Completionist</div><div class="ad">Clear a full week</div></div></div>
+        </div>
+        <div class="label section-gap">Stats</div>
+        <div class="stat-grid" style="margin-top:10px">
+          <div class="stat-card"><div class="stat-num num">342</div><div class="stat-label">Quests done</div></div>
+          <div class="stat-card"><div class="stat-num num">31</div><div class="stat-label">Best streak</div></div>
+          <div class="stat-card"><div class="stat-num num">18.4k</div><div class="stat-label">Lifetime XP</div></div>
+          <div class="stat-card"><div class="stat-num num">14</div><div class="stat-label">Redeemed</div></div>
+          <div class="stat-card"><div class="stat-num num">117</div><div class="stat-label">Active days</div></div>
+          <div class="stat-card"><div class="stat-num num">92%</div><div class="stat-label">Daily rate</div></div>
+        </div>
+      </div>
+      <div id="pt-charts" style="display:none">
+        <div class="label">Activity · past year</div>
+        <div class="heat" id="heat-year" style="margin-top:10px"></div>
+        <div class="label section-gap">By category</div>
+        <div class="bars" style="margin-top:10px">
+          <div class="bar-row"><span class="bk">Work</span><div class="bt track"><span style="width:88%"></span></div><span class="bv num">88</span></div>
+          <div class="bar-row"><span class="bk">Body</span><div class="bt track"><span style="width:64%"></span></div><span class="bv num">64</span></div>
+          <div class="bar-row"><span class="bk">Mind</span><div class="bt track"><span style="width:72%"></span></div><span class="bv num">72</span></div>
+          <div class="bar-row"><span class="bk">Health</span><div class="bt track"><span style="width:51%"></span></div><span class="bv num">51</span></div>
+          <div class="bar-row"><span class="bk">Home</span><div class="bt track"><span style="width:33%"></span></div><span class="bv num">33</span></div>
+        </div>
+        <div class="label section-gap">This week</div>
+        <div class="bars" style="margin-top:10px">
+          <div class="bar-row"><span class="bk">Mon</span><div class="bt track"><span style="width:80%"></span></div><span class="bv num">4</span></div>
+          <div class="bar-row"><span class="bk">Tue</span><div class="bt track"><span style="width:100%"></span></div><span class="bv num">5</span></div>
+          <div class="bar-row"><span class="bk">Wed</span><div class="bt track"><span style="width:60%"></span></div><span class="bv num">3</span></div>
+          <div class="bar-row"><span class="bk">Thu</span><div class="bt track"><span style="width:80%"></span></div><span class="bv num">4</span></div>
+          <div class="bar-row"><span class="bk">Fri</span><div class="bt track"><span style="width:40%"></span></div><span class="bv num">2</span></div>
+        </div>
+      </div>
+      <div id="pt-report" style="display:none">
+        <div class="card">
+          <div class="label">Daily report · Sat 8 Aug</div>
+          <p style="margin-top:12px; color:var(--dim); line-height:1.7; font-size:12.5px">
+            Solid day. You cleared <b style="color:var(--text)">2 of 6</b> quests so far for <b style="color:var(--accent)">+30 points</b>, keeping a <b style="color:var(--text)">18-day streak</b> alive.
+            Work is your strongest category this week; Home is lagging. The <b style="color:var(--text)">calendar fix</b> is still open — knock it out to hit today's 250-pt activity node and unlock the reward.
+          </p>
+          <div class="stat" style="margin-top:14px"><span>Points today</span><span class="v num">+30</span></div>
+          <div class="stat"><span>Streak status</span><span class="v" style="color:var(--good)">safe · 18 days</span></div>
+          <div class="stat"><span>Next reward</span><span class="v">Activity node at 250 pts</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="v-settings" class="view">
+      <div class="vhead"><div class="vtitle">Settings</div><div class="vsub">Show or hide dashboard modules. Saved on this device.</div></div>
+      <div class="card">
+        <div class="label">Dashboard modules</div>
+        <div class="setlist">
+          <label class="setrow"><span>Treasury</span><span class="sw"><input type="checkbox" data-mod="mod-treasury" checked><i></i></span></label>
+          <label class="setrow"><span>Focus timer</span><span class="sw"><input type="checkbox" data-mod="mod-timer" checked><i></i></span></label>
+          <label class="setrow"><span>Weather</span><span class="sw"><input type="checkbox" data-mod="mod-weather" checked><i></i></span></label>
+          <label class="setrow"><span>Markets · crypto</span><span class="sw"><input type="checkbox" data-mod="mod-markets" checked><i></i></span></label>
+          <label class="setrow"><span>Tech news</span><span class="sw"><input type="checkbox" data-mod="mod-news" checked><i></i></span></label>
+          <label class="setrow"><span>NASA picture of the day</span><span class="sw"><input type="checkbox" data-mod="mod-nasa" checked><i></i></span></label>
+        </div>
+      </div>
+      <div class="card section-gap">
+        <div class="label">Note</div>
+        <p style="margin-top:10px; color:var(--dim); font-size:12px; line-height:1.6">On phone, the world modules (weather, markets, news, NASA) are hidden automatically so the screen stays focused on claiming dailies &amp; weeklies and checking stats.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- RIGHT RAIL -->
+  <div class="rail r-right">
+    <div class="card mod" id="mod-treasury">
+      <div class="label">Treasury</div>
+      <div style="margin-top:10px">
+        <div class="stat"><span>Points</span><span class="v"><svg class="ic ic-sm"><use href="#i-gem"/></svg><span class="num">1,240</span></span></div>
+        <div class="stat"><span>Freeze</span><span class="v"><svg class="ic ic-sm"><use href="#i-snow"/></svg><span class="num">2</span></span></div>
+        <div class="stat"><span>Streak</span><span class="v"><svg class="ic ic-sm"><use href="#i-flame"/></svg><span class="num">18</span> days</span></div>
+      </div>
+    </div>
+    <div class="card timer mod" id="mod-timer">
+      <div class="label"><svg class="ic ic-sm" style="stroke:var(--accent)"><use href="#i-clock"/></svg> Focus timer <span class="kbd">Space</span></div>
+      <div class="tval num" id="tval">25:00</div>
+      <div class="tmode" id="tmode">Ship the calendar fix</div>
+      <div class="tctrl"><button class="tbtn primary" id="tbtn" onclick="toggleTimer()">Start</button><button class="tbtn" onclick="resetTimer()">Reset</button></div>
+    </div>
+    <div class="card weather mod world-mod" id="mod-weather">
+      <div class="label"><svg class="ic ic-sm" style="stroke:var(--accent)"><use href="#i-drop"/></svg> Weather</div>
+      <div class="wmain"><span class="wtemp num">24°</span><span class="wdesc">Light rain</span></div>
+      <div class="wloc"><svg class="ic ic-sm"><use href="#i-pin"/></svg> Kuala Lumpur · auto via IP</div>
+    </div>
+    <div class="card mod world-mod" id="mod-markets">
+      <div class="label"><svg class="ic ic-sm" style="stroke:var(--accent)"><use href="#i-gem"/></svg> Markets</div>
+      <div id="crypto" style="margin-top:6px"><div class="mkt-row" style="color:var(--dim)">loading…</div></div>
+    </div>
+    <div class="card mod world-mod" id="mod-news">
+      <div class="label"><svg class="ic ic-sm" style="stroke:var(--accent)"><use href="#i-quotes"/></svg> Tech news</div>
+      <div id="news" style="margin-top:2px"><div style="color:var(--dim); font-size:12px; padding-top:8px">loading…</div></div>
+    </div>
+  </div>
+
+  <!-- DOCK -->
+  <div class="r-dock">
+    <div class="cmd" data-view="overview" onclick="goName('overview')"><svg class="ic"><use href="#i-overview"/></svg><span class="cl">Home</span></div>
+    <div class="cmd" data-view="quests" onclick="goName('quests')"><svg class="ic"><use href="#i-quests"/></svg><span class="cl">Quests</span></div>
+    <div class="dock-sep"></div>
+    <div class="cmd primary" id="newq" onclick="newQuest()"><svg class="ic"><use href="#i-plus"/></svg><span class="cl">New quest <span style="opacity:.6">N</span></span></div>
+    <div class="dock-sep"></div>
+    <div class="cmd" data-view="shop" onclick="goName('shop')"><svg class="ic"><use href="#i-shop"/></svg><span class="cl">Shop</span></div>
+    <div class="cmd" data-view="profile" onclick="goName('profile')"><svg class="ic"><use href="#i-profile"/></svg><span class="cl">Profile</span></div>
+  </div>
+</div>
+
+<button id="theme" onclick="toggleTheme()" title="theme"><svg class="ic" id="theme-ic"><use href="#i-moon"/></svg></button>
+<div class="toast" id="toast"></div>
+
+<script>
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+  // 3 themes: stars (warm dark) → fog (light) → rain (blue dark)
+  const THEMES=['stars','fog','rain'], THEME_IC={stars:'#i-moon',fog:'#i-sun',rain:'#i-drop'}; let ti=0, mode='stars';
+  function setTheme(name){document.documentElement.setAttribute('data-theme',name); mode=(name==='fog')?'none':name;
+    $('#theme-ic use').setAttribute('href',THEME_IC[name]); $('#theme').title='Theme · '+name; seed();}
+  function toggleTheme(){ti=(ti+1)%3; setTheme(THEMES[ti]);}
+
+  // view routing
+  function showView(name){
+    $$('.view').forEach(v=>v.classList.toggle('active', v.id==='v-'+name));
+    $$('.nav').forEach(n=>n.classList.toggle('active', n.dataset.view===name));
+    $('#center').scrollTop=0;
+    if(name==='overview') animRing();
+    if(name==='profile') buildYearHeat();
+  }
+  function go(el){ showView(el.dataset.view); }
+  function goName(n){ showView(n); }
+
+  // subtabs
+  function qtab(el){ $$('#v-quests .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+    const d=el.dataset.qtab; $('#qt-daily').style.display=d==='daily'?'':'none'; $('#qt-weekly').style.display=d==='weekly'?'':'none'; }
+  function ptab(el){ $$('#v-profile .tab').forEach(t=>t.classList.remove('active')); el.classList.add('active');
+    const p=el.dataset.ptab; ['overview','charts','report'].forEach(k=>$('#pt-'+k).style.display=k===p?'':'none'); if(p==='charts') buildYearHeat(); }
+
+  function addForm(id){ $('#'+id).classList.toggle('open'); }
+
+  // quests
+  function reorder(list){const qs=[...list.children]; qs.sort((a,b)=>(a.classList.contains('done')?1:0)-(b.classList.contains('done')?1:0)); qs.forEach(q=>list.appendChild(q));}
+  function toggleQuest(el){const done=el.classList.toggle('done'); const box=el.querySelector('.box');
+    box.innerHTML=done?'<svg class="ic ic-sm"><use href="#i-check"/></svg>':'';
+    if(done && !reduce){const r=box.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2);}
+    reorder(el.parentElement); if(el.closest('#daily-list')) animRing();}
+
+  // shop
+  function redeem(btn,name){ btn.textContent='Redeemed ✓'; btn.disabled=true; toast('Redeemed · '+name); }
+
+  function toast(msg){const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1800);}
+
+  // confetti
+  function burst(x,y){const cols=['var(--accent)','var(--good)','var(--text)'];
+    for(let i=0;i<16;i++){const p=document.createElement('div'); p.className='confetti'; p.style.left=x+'px'; p.style.top=y+'px'; p.style.background=cols[i%3];
+      document.body.appendChild(p); const a=Math.random()*6.28, d=26+Math.random()*46;
+      requestAnimationFrame(()=>{p.style.transition='transform .7s cubic-bezier(.2,.7,.3,1),opacity .7s'; p.style.transform=`translate(${Math.cos(a)*d}px,${Math.sin(a)*d+70}px) rotate(${Math.random()*360}deg)`; p.style.opacity='0';});
+      setTimeout(()=>p.remove(),760);}}
+
+  // functional segmented ring — one segment per daily quest, lit when done
+  function animRing(){
+    const svg=$('#ringsvg'); if(!svg) return;
+    const qs=$$('#daily-list .q'); const total=qs.length||5; const done=qs.filter(q=>q.classList.contains('done')).length;
+    const R=52, C=2*Math.PI*R, gap=total>1?6:0, seg=C/total-gap;
+    let html='';
+    for(let i=0;i<total;i++){const off=-i*(C/total);
+      html+=`<circle cx="60" cy="60" r="${R}" fill="none" stroke="${i<done?'var(--accent)':'var(--line-2)'}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${seg} ${C-seg}" stroke-dashoffset="${off}" transform="rotate(-90 60 60)"/>`;}
+    svg.innerHTML=html;
+    const rd=$('#rank-daily'); if(rd) rd.textContent=`${done} / ${total} today`;
+  }
+
+  // week strip
+  (function(){const w=$('#week'); const days=[1,1,0,1,1,1,2]; w.innerHTML=days.map(d=>`<span class="wd${d===1?' on':''}${d===2?' on today':''}"></span>`).join('');})();
+
+  // year heatmap (built lazily)
+  let heatBuilt=false;
+  function buildYearHeat(){const h=$('#heat-year'); if(!h||heatBuilt) return; heatBuilt=true; let html='';
+    for(let i=0;i<53*7;i++){const r=Math.random(); let l=0; if(r<.34)l=0; else if(r<.54)l=1; else if(r<.74)l=2; else if(r<.9)l=3; else l=4; html+=`<span class="hc${l?' l'+l:''}"></span>`;}
+    h.innerHTML=html;}
+
+  // clock + time-left
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function tick(){const d=new Date(), p=n=>String(n).padStart(2,'0'); $('#clock').textContent=`${p(d.getHours())}:${p(d.getMinutes())}`;
+    const e=new Date(d); e.setHours(24,0,0,0); const ms=e-d; $('#cdate').innerHTML=`${DOW[d.getDay()]} · ${d.getDate()} ${MON[d.getMonth()].toUpperCase()} · <b>${Math.floor(ms/3.6e6)}h ${Math.floor(ms%3.6e6/6e4)}m left</b>`;}
+  tick(); setInterval(tick,1000);
+
+  // focus timer
+  const FOCUS='Ship the calendar fix'; let tSecs=1500, tRun=false, tInt=null;
+  const tval=$('#tval'), tmode=$('#tmode'), tbtn=$('#tbtn'); const tShow=()=>tval.textContent=`${Math.floor(tSecs/60)}:${String(tSecs%60).padStart(2,'0')}`;
+  function toggleTimer(){tRun=!tRun; tbtn.textContent=tRun?'Pause':'Start'; tbtn.classList.toggle('primary',!tRun); tmode.textContent=tRun?`Focusing · ${FOCUS}`:`Paused · ${FOCUS}`;
+    clearInterval(tInt); if(tRun) tInt=setInterval(()=>{ if(tSecs>0){tSecs--;tShow();} else {tRun=false;clearInterval(tInt);tbtn.textContent='Start';tbtn.classList.add('primary');tmode.textContent='Session complete';} },1000);}
+  function resetTimer(){clearInterval(tInt); tRun=false; tSecs=1500; tShow(); tbtn.textContent='Start'; tbtn.classList.add('primary'); tmode.textContent=FOCUS;}
+  function beginFocus(){ if(!tRun) toggleTimer(); toast('Focus started · '+FOCUS); }
+  function newQuest(){ showView('quests'); const q=$$('#v-quests .tab'); if(q[0]&&!q[0].classList.contains('active')) qtab(q[0]); addForm('add-daily'); $('#add-daily .name')?.focus(); toast('New quest — daily'); }
+  tShow();
+
+  // login streak dots
+  (function(){const days=[1,1,1,0,1,1,1]; document.querySelector('#loginrow').innerHTML=days.map(d=>`<span class="wd${d?' on':''}"></span>`).join('');})();
+
+  // keyboard
+  addEventListener('keydown',e=>{ if(e.target.matches('input,textarea')) return;
+    if(e.code==='Space'){e.preventDefault(); toggleTimer();}
+    if(e.key.toLowerCase()==='n'){const b=$('#newq'); b.style.transform='scale(1.07)'; setTimeout(()=>b.style.transform='',160); toast('New quest — pick Daily or Weekly'); showView('quests');}});
+
+  // per-theme ambient background: starfield (stars), rainfall (rain), or none (fog)
+  const c=$('#rain'), x=c.getContext('2d'); let parts=[];
+  const star=()=>({x:Math.random()*c.width, y:Math.random()*c.height, r:Math.random()*1.2+.3, a:Math.random(), tw:Math.random()*.02+.004});
+  const drop=s=>({x:Math.random()*c.width, y:s?Math.random()*c.height:-20, len:Math.random()*9+6, sp:Math.random()*3+3, w:Math.random()*.6+.3});
+  function seed(){c.width=innerWidth; c.height=innerHeight;
+    if(mode==='rain') parts=Array.from({length:Math.min(90,Math.floor(innerWidth*innerHeight/16000))},()=>drop(true));
+    else if(mode==='stars') parts=Array.from({length:Math.min(150,Math.floor(innerWidth*innerHeight/11000))},()=>star());
+    else parts=[];}
+  addEventListener('resize',seed);
+  function draw(){x.clearRect(0,0,c.width,c.height);
+    if(mode==='stars'){for(const s of parts){s.a+=s.tw; const t=(Math.sin(s.a)+1)/2; x.fillStyle=`rgba(240,231,208,${.10+t*.5})`; x.beginPath(); x.arc(s.x,s.y,s.r,0,7); x.fill();}}
+    else if(mode==='rain'){x.lineCap='round'; for(const d of parts){x.strokeStyle='rgba(150,180,210,.10)'; x.lineWidth=d.w; x.beginPath(); x.moveTo(d.x,d.y); x.lineTo(d.x-1,d.y+d.len); x.stroke(); d.y+=d.sp; d.x-=.25; if(d.y>c.height+20) Object.assign(d,drop(false));}}
+    if(!reduce) requestAnimationFrame(draw);}
+  seed(); draw();
+
+  animRing();
+
+  /* ===== live dashboard feeds (free APIs, graceful fallback) ===== */
+  async function loadCrypto(){const el=$('#crypto'); const fb=[['BTC',64210,2.3],['ETH',3140,-1.1],['SOL',148,4.6]];
+    try{const j=await(await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true')).json();
+      renderCrypto(el,[['BTC',j.bitcoin.usd,j.bitcoin.usd_24h_change],['ETH',j.ethereum.usd,j.ethereum.usd_24h_change],['SOL',j.solana.usd,j.solana.usd_24h_change]]);}
+    catch(e){renderCrypto(el,fb);}}
+  function renderCrypto(el,rows){el.innerHTML=rows.map(([s,p,ch])=>{const up=ch>=0; return `<div class="mkt-row"><span class="mkt-sym">${s}</span><span class="mkt-price"><div class="num">$${Number(p).toLocaleString(undefined,{maximumFractionDigits:p<10?4:0})}</div><div class="mkt-chg num ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(ch).toFixed(1)}%</div></span></div>`;}).join('');}
+
+  async function loadNews(){const el=$('#news'); const fb=[['Show HN: a self-hosted quest tracker','news.ycombinator.com',0],['The math behind gacha pity systems','arxiv.org',0],['Why monospace UIs are having a moment','css-tricks.com',0]];
+    try{const ids=await(await fetch('https://hacker-news.firebaseio.com/v0/topstories.json')).json();
+      const items=await Promise.all(ids.slice(0,3).map(id=>fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(r=>r.json())));
+      renderNews(el,items.map(it=>[it.title, it.url?new URL(it.url).hostname.replace('www.',''):'news.ycombinator.com', it.score||0, it.id]));}
+    catch(e){renderNews(el,fb);}}
+  function renderNews(el,rows){el.innerHTML=rows.map(([t,h,s,id])=>`<a class="news-item" href="${id?'https://news.ycombinator.com/item?id='+id:'#'}" target="_blank" rel="noopener">${t}<div class="nmeta">${h}${s?' · '+s+' pts':''}</div></a>`).join('');}
+
+  async function loadApod(){const el=$('#apod');
+    try{const j=await(await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&thumbs=true')).json();
+      const img=j.media_type==='image'?j.url:(j.thumbnail_url||''); el.innerHTML=`${img?`<img src="${img}" alt="${j.title||''}">`:''}<div class="at">${j.title||'NASA APOD'}</div><div class="ad">${j.explanation||''}</div>`;}
+    catch(e){el.innerHTML=`<div class="at">Pillars of Creation</div><div class="ad">Star-forming towers of gas in the Eagle Nebula, ~6,500 light-years away. (Sample — live NASA feed unavailable.)</div>`;}}
+
+  loadCrypto(); loadNews(); loadApod();
+
+  /* settings — hide/show modules, persisted */
+  function applyMods(){let hidden={}; try{hidden=JSON.parse(localStorage.getItem('questMods'))||{};}catch(e){}
+    $$('#v-settings input[data-mod]').forEach(inp=>{const on=hidden[inp.dataset.mod]!==false; inp.checked=on; const el=document.getElementById(inp.dataset.mod); if(el) el.classList.toggle('mod-off',!on);});}
+  $$('#v-settings input[data-mod]').forEach(inp=>inp.addEventListener('change',()=>{
+    const el=document.getElementById(inp.dataset.mod); if(el) el.classList.toggle('mod-off',!inp.checked);
+    let hidden={}; try{hidden=JSON.parse(localStorage.getItem('questMods'))||{};}catch(e){} hidden[inp.dataset.mod]=inp.checked;
+    try{localStorage.setItem('questMods',JSON.stringify(hidden));}catch(e){}}));
+  applyMods();
+</script>
+</body>
+</html>

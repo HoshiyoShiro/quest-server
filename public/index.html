@@ -50,8 +50,8 @@ body.theme-rain {
   --bg: #0b0f14; --surface: #11161e; --surface-2: #17202a;
   --border: #28333f; --border-strong: #3c4a58;
   --ink: #dfe7ef; --dim: #7d8b9c;
-  --accent: #e3b262; --accent-ink: #10151c;
-  --accent-dim: rgba(227, 178, 98, 0.13); --accent-border: rgba(227, 178, 98, 0.38);
+  --accent: #79b8e0; --accent-ink: #08131c;
+  --accent-dim: rgba(121, 184, 224, 0.14); --accent-border: rgba(121, 184, 224, 0.40);
   --danger: #d4755f;
   --hshadow: rgba(0, 0, 0, 0.5); --shadow: rgba(0, 0, 0, 0.5);
   --scanline: rgba(0, 0, 0, 0.05);
@@ -718,6 +718,194 @@ footer {
   .check.pop, .toast { animation: none !important; }
   .widget:hover, .quest-card:hover, .reward-card:hover, .quote-card:hover { transform: none !important; }
 }
+
+/* ===================================================================
+   MODERN RESKIN OVERLAY (redesign branch) — reshapes the pixel-terminal
+   surfaces into the new soft/rounded dashboard language. Pure CSS over
+   the existing markup: every feature and script stays untouched.
+   =================================================================== */
+:root{ --r:13px; --r-sm:9px; --soft:0 1px 2px rgba(0,0,0,.35), 0 12px 28px -18px rgba(0,0,0,.7); }
+body.theme-fog{ --soft:0 1px 2px rgba(60,55,40,.12), 0 12px 28px -18px rgba(60,55,40,.4); }
+body{ font-size:13.5px; }
+.grain{ opacity:.3; }
+
+nav{ border-radius:16px; box-shadow:var(--soft); padding:12px 18px; }
+#nav-home{ text-shadow:none; }
+nav button{ opacity:.7; padding:8px 13px; border-radius:9px; }
+nav button:hover{ background:var(--accent-dim); opacity:1; }
+nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--accent); }
+@media (max-width:640px){ nav button{ padding:8px 11px; } }
+
+.hero h1{ text-shadow:none; }
+.quote-banner{ border-radius:var(--r); box-shadow:var(--soft); }
+.widget{ border-radius:var(--r); box-shadow:var(--soft); }
+.widget:hover{ box-shadow:var(--soft); border-color:var(--border-strong); }
+.big-stat{ text-shadow:none; }
+
+/* hexagon rank badge */
+.rank-badge{ width:48px; height:48px; border:none !important; box-shadow:none !important;
+  background:linear-gradient(150deg, var(--accent), var(--accent)); color:var(--accent-ink) !important;
+  clip-path:polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%); }
+
+.section-title{ border-bottom-color:var(--border); }
+.add-toggle-btn{ border-radius:8px; }
+.subtab-btn{ border-radius:var(--r-sm); box-shadow:none; }
+.subtab-btn.active{ box-shadow:none; background:var(--accent-dim); color:var(--accent); border-color:var(--accent-border); }
+
+.quest-card, .reward-card, .quote-card, .cat-header{ border-radius:var(--r-sm); }
+.quest-card:hover, .reward-card:hover, .quote-card:hover{ box-shadow:var(--soft); }
+.check{ border-radius:6px; }
+.pts-badge{ border-radius:6px; }
+
+.add-form input, .add-form select, .add-form textarea{ border-radius:8px; }
+.add-btn{ border-radius:8px; }
+.stat-card{ border-radius:var(--r); box-shadow:var(--soft); }
+
+/* ===== HUD LAYOUT (redesign rebuild) — 3-column dashboard ===== */
+.wrap{ max-width:none; padding:20px; }
+.hud{ display:grid; grid-template-columns:290px minmax(0,1fr) 300px; gap:20px; align-items:start; grid-auto-flow:dense; }
+.hud-left{ grid-column:1; grid-row:1; }
+.hud-center{ grid-column:2; grid-row:1; min-width:0; }
+.hud-right{ grid-column:3; grid-row:1; }
+.hud-left, .hud-right{ display:flex; flex-direction:column; gap:16px; position:sticky; top:22px; align-self:start; }
+.hud-left nav{ flex-direction:column; align-items:stretch; margin-bottom:0; gap:8px; }
+.hud-left #nav-home{ text-align:center; padding:2px 0 6px; }
+.hud-clock{ text-align:center; padding-bottom:10px; margin-bottom:2px; border-bottom:1px solid var(--border); }
+#hudClock{ font-family:var(--pixel); font-size:20px; }
+#hudDate{ font-size:9px; letter-spacing:.11em; text-transform:uppercase; color:var(--dim); margin-top:3px; }
+#hudDate b{ color:var(--accent); font-weight:400; }
+.hud-left .nav-links{ flex-direction:column; gap:4px; width:100%; }
+.hud-left .nav-links button{ display:flex; align-items:center; gap:9px; text-align:left; padding:9px 12px; width:100%; }
+.nvic{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+@media (max-width:1000px){ .hud-clock{ border-bottom:none; padding-bottom:0; margin-right:6px; } .hud-left .nav-links button{ width:auto; } }
+
+/* focus timer */
+.ft-val{ font-family:var(--pixel); font-size:26px; margin-top:4px; }
+.ft-mode{ font-size:11px; color:var(--dim); margin-top:4px; }
+.ft-ctrl{ display:flex; gap:8px; margin-top:12px; }
+.ft-btn{ flex:1; background:transparent; border:1px solid var(--border-strong); color:var(--ink); border-radius:8px; font-family:var(--mono); font-size:11px; padding:8px; cursor:pointer; transition:.15s; }
+.ft-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.ft-btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+.ft-btn.primary:hover{ color:var(--accent-ink); opacity:.92; }
+.confetti{ position:fixed; width:7px; height:7px; border-radius:1px; pointer-events:none; z-index:9999; will-change:transform,opacity; }
+/* module toggles */
+.mod-off{ display:none !important; }
+.modrow{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-top:1px solid var(--border); font-size:13px; cursor:pointer; }
+.modrow:first-of-type{ border-top:none; }
+.sw{ position:relative; width:38px; height:22px; flex-shrink:0; }
+.sw input{ position:absolute; inset:0; width:100%; height:100%; opacity:0; margin:0; cursor:pointer; }
+.sw i{ position:absolute; inset:0; background:var(--surface-2); border:1px solid var(--border-strong); border-radius:999px; transition:.2s; }
+.sw i::after{ content:''; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:var(--dim); transition:.2s; }
+.sw input:checked + i{ background:var(--accent-dim); border-color:var(--accent-border); }
+.sw input:checked + i::after{ transform:translateX(16px); background:var(--accent); }
+.theme-pick{ display:flex; gap:6px; flex-wrap:wrap; }
+.theme-pick button, .pref-btn{ font-family:var(--mono); font-size:11px; background:var(--surface-2); border:1px solid var(--border-strong); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; transition:.15s; }
+.theme-pick button:hover, .pref-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.theme-pick button.active{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent-border); }
+/* quest difficulty tier chip */
+.qtier{ font-family:var(--pixel); font-size:8px; text-transform:uppercase; letter-spacing:.06em; padding:4px 7px; border-radius:5px; border:1px solid var(--border-strong); color:var(--dim); flex-shrink:0; white-space:nowrap; align-self:center; }
+.qtier.tier-hard{ color:var(--danger); border-color:var(--danger); }
+.qtier.tier-normal{ color:var(--accent); border-color:var(--accent-border); }
+
+/* ===== OVERVIEW page (hexagon medallion stage) ===== */
+.ov-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:24px 0; min-height:calc(100vh - 120px); justify-content:center; }
+@media (max-width:1000px){ .ov-wrap{ min-height:auto; padding:20px 0 8px; } }
+.ring-wrap{ position:relative; width:clamp(200px,24vw,240px); aspect-ratio:1; }
+.ring-wrap svg.ring{ position:absolute; inset:0; }
+.ring-wrap svg.ring circle{ transition:stroke .3s ease; }
+.ov-wrap .medallion{ position:absolute; inset:30px; background:var(--surface); border:1px solid var(--border-strong); display:grid; place-items:center;
+  clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%); }
+.rank-num{ font-family:var(--pixel); font-size:clamp(40px,5.5vw,52px); line-height:1; color:var(--accent); }
+.rank-word{ font-family:var(--pixel); font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
+.rank-xp{ font-size:10px; color:var(--dim); margin-top:7px; }
+.core-eyebrow{ margin-top:22px; font-family:var(--pixel); font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--accent); }
+.core-title{ margin-top:8px; font-family:var(--pixel); font-size:15px; letter-spacing:.02em; }
+.core-sub{ margin-top:6px; font-size:12px; color:var(--dim); }
+.week{ display:flex; gap:7px; justify-content:center; margin-top:18px; }
+.week .wd{ width:11px; height:11px; border-radius:3px; background:var(--surface-2); border:1px solid var(--border-strong); }
+.week .wd.on{ background:var(--accent); border-color:var(--accent); }
+.week .wd.today{ box-shadow:0 0 0 2px var(--accent-border); }
+.begin{ margin-top:22px; background:var(--accent); color:var(--accent-ink); border:none; border-radius:11px; padding:11px 22px; font-family:var(--mono); font-size:12px; font-weight:500; cursor:pointer; transition:.15s; }
+.begin:hover{ opacity:.92; } .begin:active{ transform:scale(.98); }
+
+/* achievements collapse + report summary */
+.ach-grid.ach-collapsed > *:nth-child(n+7){ display:none; }
+.rpt-summary{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:6px; }
+.rpt-cell{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; box-shadow:var(--soft); }
+.rpt-num{ font-family:var(--pixel); font-size:22px; color:var(--accent); }
+.rpt-label{ font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
+.journal-pad textarea{ min-height:56vh; line-height:1.7; }
+
+/* desktop: fixed viewport — rails pinned, only the center scrolls (no drift on page switch) */
+.profile-gate{ overflow-y:auto; }
+@media (min-width:1001px){
+  html, body{ height:100%; overflow:hidden; }
+  .wrap{ height:100vh; max-width:none; padding:20px; overflow:hidden; }
+  .hud{ height:100%; align-items:stretch; }
+  .hud-left, .hud-right{ position:static; align-self:stretch; grid-row:1; max-height:100%; overflow-y:auto; overflow-x:hidden; }
+  .hud-center{ align-self:stretch; grid-row:1; max-height:100%; overflow-y:auto; overflow-x:hidden; }
+  .hud-left::-webkit-scrollbar, .hud-right::-webkit-scrollbar, .hud-center::-webkit-scrollbar{ width:7px; }
+  .hud-left::-webkit-scrollbar-thumb, .hud-right::-webkit-scrollbar-thumb, .hud-center::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:4px; }
+  .hud-left, .hud-right, .hud-center{ scrollbar-width:thin; }
+  #overview.view.active{ min-height:100%; display:flex; flex-direction:column; }
+  .ov-wrap{ flex:1; min-height:0; }
+}
+
+/* points dim until row hover */
+.quest-card .pts-badge{ color:var(--dim); background:transparent; border-color:var(--border); transition:color .15s, background .15s, border-color .15s; }
+.quest-card:hover .pts-badge{ color:var(--accent); background:var(--accent-dim); border-color:var(--accent-border); }
+
+/* keep the rank centred in the medallion */
+.ov-wrap .rank-xp{ white-space:nowrap; }
+
+/* hide "begin focus" when the timer module is turned off */
+.hud:has(#mod-focus.mod-off) #ovBegin{ display:none !important; }
+
+/* phone quick-add FAB */
+#qFab{ display:none; }
+@media (max-width:1000px){
+  #qFab{ display:inline-flex; align-items:center; gap:7px; position:fixed; right:16px; bottom:16px; z-index:50;
+    background:var(--accent); color:var(--accent-ink); border:none; border-radius:999px; padding:13px 20px;
+    font-family:var(--mono); font-size:12px; font-weight:600; cursor:pointer; box-shadow:0 6px 20px -6px rgba(0,0,0,.5); }
+  #qFab .nvic{ stroke:var(--accent-ink); }
+}
+.hud .hero{ margin-bottom:0; }
+.hud .hero h1{ font-size:18px; }
+.hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
+.hud .widget{ min-height:0; }
+.hud .quote-banner{ margin-bottom:0; }
+
+.dash-mod{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; box-shadow:var(--soft); }
+.dash-label{ font-family:var(--pixel); font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--dim); display:flex; align-items:center; gap:7px; margin-bottom:10px; }
+.dash-label::before{ content:''; width:6px; height:6px; background:var(--accent); flex-shrink:0; }
+.dash-sub{ font-size:11px; color:var(--dim); }
+.dash-wmain{ display:flex; align-items:baseline; gap:9px; }
+.dash-wtemp{ font-family:var(--pixel); font-size:22px; }
+.dash-wdesc{ font-size:12px; }
+.mkt-row{ display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-top:1px solid var(--border); font-size:12px; }
+.mkt-row:first-child{ border-top:none; }
+.mkt-sym{ font-weight:500; } .mkt-price{ text-align:right; line-height:1.25; }
+.mkt-chg{ font-size:10px; } .up{ color:var(--accent); } .down{ color:var(--danger); }
+.news-item{ display:block; padding:8px 0; border-top:1px solid var(--border); font-size:12px; color:var(--ink); text-decoration:none; line-height:1.4; }
+.news-item:first-child{ border-top:none; } .news-item:hover{ color:var(--accent); }
+.news-item .nmeta{ font-size:9.5px; color:var(--dim); margin-top:3px; }
+.apod-img{ width:100%; height:132px; object-fit:cover; border-radius:8px; margin-bottom:8px; display:block; background:var(--surface-2); }
+.apod-title{ font-size:12px; font-weight:500; }
+.apod-desc{ font-size:10.5px; color:var(--dim); margin-top:4px; display:-webkit-box; -webkit-line-clamp:2; line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+
+@media (max-width:1000px){
+  .wrap{ padding:16px; }
+  .hud{ grid-template-columns:1fr; gap:14px; }
+  .hud-left, .hud-center, .hud-right{ grid-column:auto; grid-row:auto; }
+  .hud-left{ order:1; } .hud-right{ order:2; } .hud-center{ order:3; }
+  .hud-left, .hud-right{ position:static; max-height:none; overflow:visible; }
+  .hud-left nav{ flex-direction:row; flex-wrap:wrap; align-items:center; }
+  .hud-left #nav-home{ border-bottom:none; padding:0; }
+  .hud-left .nav-links{ flex-direction:row; flex-wrap:wrap; gap:6px; }
+  .hud-left .nav-links button{ width:auto; text-align:center; }
+  .hud .widgets{ grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .world-mod{ display:none !important; }   /* phone: drop weather/markets/news/nasa */
+}
 </style>
 </head>
 <body class="theme-stars">
@@ -751,29 +939,36 @@ footer {
 </div>
 
 <div class="wrap hidden" id="appRoot">
+<div class="hud">
+<aside class="hud-left">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <symbol id="i-quests" viewBox="0 0 24 24"><path d="M5 6h9M5 12h9M5 18h6"/><path d="M17 5l2 2 3-3"/></symbol>
+    <symbol id="i-season" viewBox="0 0 24 24"><path d="M12 4l1.9 4.9L19 10l-5.1 1.1L12 16l-1.9-4.9L5 10l5.1-1.1z"/></symbol>
+    <symbol id="i-shop" viewBox="0 0 24 24"><path d="M6.5 8h11l-1 11.5h-9z"/><path d="M9.2 8a2.8 2.8 0 0 1 5.6 0"/></symbol>
+    <symbol id="i-quotes" viewBox="0 0 24 24"><path d="M5 6h14v9H9l-4 3.5z"/></symbol>
+    <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 4v2M12 18v2M4.9 7.5l1.8 1M17.3 15.5l1.8 1M4.9 16.5l1.8-1M17.3 8.5l1.8-1"/></symbol>
+    <symbol id="i-overview" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 13l4-3"/><circle cx="12" cy="13" r="1.3"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24"><path d="M6 4h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h6"/></symbol>
+  </defs></svg>
   <nav>
     <button id="nav-home">quest log</button>
+    <div class="hud-clock"><div id="hudClock" class="num">--:--</div><div id="hudDate"></div></div>
     <div class="nav-links">
-      <button onclick="showView('quests')" class="active" id="nav-quests">quests</button>
-      <button onclick="showView('season')" id="nav-season">season</button>
-      <button onclick="showView('shop')" id="nav-shop">shop</button>
-      <button onclick="showView('quotes')" id="nav-quotes">quotes</button>
-      <button onclick="showView('profile')" id="nav-profile">profile</button>
+      <button onclick="showView('overview')" class="active" id="nav-overview"><svg class="nvic"><use href="#i-overview"/></svg>overview</button>
+      <button onclick="showView('quests')" id="nav-quests"><svg class="nvic"><use href="#i-quests"/></svg>quests</button>
+      <button onclick="showView('season')" id="nav-season"><svg class="nvic"><use href="#i-season"/></svg>season</button>
+      <button onclick="showView('shop')" id="nav-shop"><svg class="nvic"><use href="#i-shop"/></svg>shop</button>
+      <button onclick="showView('quotes')" id="nav-quotes"><svg class="nvic"><use href="#i-quotes"/></svg>quotes</button>
+      <button onclick="showView('journal')" id="nav-journal"><svg class="nvic"><use href="#i-journal"/></svg>journal</button>
+      <button onclick="showView('profile')" id="nav-profile"><svg class="nvic"><use href="#i-profile"/></svg>profile</button>
+      <button onclick="showView('settings')" id="nav-settings"><svg class="nvic"><use href="#i-settings"/></svg>settings</button>
     </div>
   </nav>
 
   <div class="hero">
     <h1><em id="greeting">quest log</em></h1>
     <p id="greeting-sub">let's get something done today</p>
-  </div>
-
-  <div class="quote-banner">
-    <div class="quote-mark">"</div>
-    <div class="quote-banner-main">
-      <div class="quote-banner-text" id="quoteBannerText">add your first quote in the Quotes tab — words worth remembering, from anyone.</div>
-      <div class="quote-banner-author" id="quoteBannerAuthor"></div>
-    </div>
-    <button class="quote-banner-refresh" onclick="shuffleQuoteBanner()" title="show another">↻</button>
   </div>
 
   <div class="widgets">
@@ -800,9 +995,61 @@ footer {
       <div class="big-stat-sub">auto-protects a missed daily streak</div>
     </div>
   </div>
+  <div class="dash-mod" id="mod-focus">
+    <div class="dash-label">Focus timer</div>
+    <div class="ft-val num" id="ftVal">25:00</div>
+    <div class="ft-mode" id="ftMode">ready when you are</div>
+    <div class="ft-ctrl"><button class="ft-btn primary" id="ftBtn" onclick="ftToggle()">Start</button><button class="ft-btn" onclick="ftReset()">Reset</button></div>
+  </div>
+</aside>
+
+<aside class="hud-right">
+  <div class="quote-banner">
+    <div class="quote-mark">"</div>
+    <div class="quote-banner-main">
+      <div class="quote-banner-text" id="quoteBannerText">add your first quote in the Quotes tab — words worth remembering, from anyone.</div>
+      <div class="quote-banner-author" id="quoteBannerAuthor"></div>
+    </div>
+    <button class="quote-banner-refresh" onclick="shuffleQuoteBanner()" title="show another">↻</button>
+  </div>
+  <div class="dash-mod world-mod" id="mod-weather">
+    <div class="dash-label">Weather</div>
+    <div class="dash-wmain"><span class="dash-wtemp" id="wxTemp">--°</span><span class="dash-wdesc" id="wxDesc">loading…</span></div>
+    <div class="dash-sub" id="wxLoc">auto via IP</div>
+  </div>
+  <div class="dash-mod world-mod" id="mod-markets">
+    <div class="dash-label">Markets</div>
+    <div id="crypto"><div class="dash-sub">loading…</div></div>
+  </div>
+  <div class="dash-mod world-mod" id="mod-news">
+    <div class="dash-label">Tech news</div>
+    <div id="news"><div class="dash-sub">loading…</div></div>
+  </div>
+  <div class="dash-mod world-mod" id="mod-nasa">
+    <div class="dash-label">NASA · picture of the day</div>
+    <div id="apod"><div class="dash-sub">loading…</div></div>
+  </div>
+</aside>
+
+<main class="hud-center">
+
+  <!-- OVERVIEW VIEW -->
+  <div id="overview" class="view active">
+    <div class="ov-wrap">
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 120 120" id="ovRing"></svg>
+        <div class="medallion"><div><div class="rank-num num" id="ovRank">1</div><div class="rank-word">Rank</div><div class="rank-xp num" id="ovXp">0 / 100 XP</div></div></div>
+      </div>
+      <div class="core-eyebrow">Focus quest</div>
+      <div class="core-title" id="ovFocus">—</div>
+      <div class="core-sub" id="ovFocusSub"></div>
+      <div class="week" id="ovWeek"></div>
+      <button class="begin" id="ovBegin" onclick="ovBeginFocus()">▶ Begin focus session</button>
+    </div>
+  </div>
 
   <!-- QUESTS VIEW -->
-  <div id="quests" class="view active">
+  <div id="quests" class="view">
     <div class="subtab-group">
       <button class="subtab-btn active" id="subtab-btn-quests-daily" onclick="showSubTab('quests','daily')">daily</button>
       <button class="subtab-btn" id="subtab-btn-quests-weekly" onclick="showSubTab('quests','weekly')">weekly</button>
@@ -887,9 +1134,13 @@ footer {
       </div>
     </div>
 
-    <div class="section-title">quest journal <span class="section-sub">just for jotting things down</span></div>
-    <div class="widget notepad">
-      <textarea id="notes" placeholder="jot down today's plan..."></textarea>
+  </div>
+
+  <!-- JOURNAL VIEW -->
+  <div id="journal" class="view">
+    <div class="section-title">journal <span class="section-sub">a scratchpad for this profile — autosaved</span></div>
+    <div class="widget notepad journal-pad">
+      <textarea id="notes" placeholder="jot down today's plan, thoughts, anything..."></textarea>
       <div class="notepad-footer">
         <span id="save-status">autosaved</span>
         <span id="note-count"></span>
@@ -994,8 +1245,49 @@ footer {
     </div>
 
     <div class="subtab-panel" id="subtab-profile-report">
+      <div class="section-title">daily report</div>
+      <div class="widget" style="display:block;">
+        <p id="rptNarrative" style="line-height:1.75; font-size:13px; color:var(--dim);">—</p>
+      </div>
+      <div class="section-title">today</div>
+      <div class="rpt-summary">
+        <div class="rpt-cell"><div class="rpt-num num" id="rptDone">0</div><div class="rpt-label">quests done today</div></div>
+        <div class="rpt-cell"><div class="rpt-num num" id="rptPts">0</div><div class="rpt-label">activity pts today</div></div>
+        <div class="rpt-cell"><div class="rpt-num num" id="rptStreak">0</div><div class="rpt-label">login streak</div></div>
+        <div class="rpt-cell"><div class="rpt-num num" id="rptBest">0</div><div class="rpt-label">best streak</div></div>
+      </div>
       <div class="section-title">quest report <span class="section-sub">completion per quest, all time</span></div>
       <div class="card-list" id="questReport"></div>
+    </div>
+
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div id="settings" class="view">
+    <div class="section-title">preferences</div>
+    <div class="widget" style="display:block;">
+      <label class="modrow"><span>Theme</span>
+        <span class="theme-pick">
+          <button onclick="pickTheme('stars')">stars</button>
+          <button onclick="pickTheme('fog')">fog</button>
+          <button onclick="pickTheme('rain')">rain</button>
+          <button onclick="pickTheme('auto')">auto</button>
+        </span>
+      </label>
+      <label class="modrow"><span>Sound</span><button class="pref-btn" onclick="toggleSound()" id="sound-text">sound: off</button></label>
+      <label class="modrow"><span>Profile</span><span><span id="currentProfileLabel">—</span> <button class="pref-btn" onclick="switchProfile()">switch</button></span></label>
+      <label class="modrow"><span>Status</span><span class="dash-sub"><span id="syncStatus" role="status" aria-live="polite">saved</span> · <span id="theme-text">mode: stars</span> · auto <span id="auto-status">on</span></span></label>
+      <span id="footer-greeting" style="display:none"></span>
+    </div>
+
+    <div class="section-title">dashboard modules <span class="section-sub">show or hide the right-rail widgets</span></div>
+    <div class="widget" style="display:block;">
+      <label class="modrow"><span>Weather</span><span class="sw"><input type="checkbox" data-mod="mod-weather" checked><i></i></span></label>
+      <label class="modrow"><span>Markets · crypto</span><span class="sw"><input type="checkbox" data-mod="mod-markets" checked><i></i></span></label>
+      <label class="modrow"><span>Tech news</span><span class="sw"><input type="checkbox" data-mod="mod-news" checked><i></i></span></label>
+      <label class="modrow"><span>NASA picture of the day</span><span class="sw"><input type="checkbox" data-mod="mod-nasa" checked><i></i></span></label>
+      <label class="modrow"><span>Focus timer</span><span class="sw"><input type="checkbox" data-mod="mod-focus" checked><i></i></span></label>
+      <div class="info-note" style="margin-top:10px;">saved per device. on phones these auto-hide so the screen stays focused on claiming dailies &amp; weeklies.</div>
     </div>
 
     <div class="section-title">data</div>
@@ -1009,22 +1301,12 @@ footer {
     </div>
   </div>
 
+  </main>
+</div><!-- /hud -->
+<button id="qFab" onclick="newDailyQuick()" aria-label="new quest"><svg class="nvic"><use href="#i-quests"/></svg>+ quest</button>
+
   <datalist id="catList"></datalist>
 
-  <footer>
-    <div class="footer-left">
-      <span>quest log — 2026</span>
-      <span>· <span id="currentProfileLabel">—</span></span>
-      <button class="theme-toggle-text" onclick="switchProfile()" style="padding:2px 6px;">switch profile</button>
-    </div>
-    <div class="footer-center"><span id="footer-greeting">keep going</span></div>
-    <div class="footer-right">
-      <span class="auto-indicator" id="syncStatus" role="status" aria-live="polite">saved</span>
-      <button class="theme-toggle-text" onclick="toggleSound()" id="sound-text">sound: off</button>
-      <button class="theme-toggle-text" onclick="cycleTheme()" id="theme-text">mode: stars</button>
-      <span class="auto-indicator">auto: <span id="auto-status">on</span></span>
-    </div>
-  </footer>
 </div>
 
 <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
@@ -1712,12 +1994,14 @@ function makeQuestCard(q, kind) {
   const subs = q.subs || [];
   const doneSubs = subs.filter(s => s.done).length;
   const pop = done && q.id === lastToggledId ? ' pop' : '';
+  const tier = q.points >= 40 ? 'hard' : q.points >= 20 ? 'normal' : 'easy';
   card.innerHTML = `
     <button type="button" class="check ${done ? 'checked' : ''}${pop}" role="checkbox" aria-checked="${done}" aria-label="${escapeHtml(q.name)}" ${active ? `onclick="${cfg.toggle}('${q.id}')"` : 'disabled'}>${done ? '✓' : ''}</button>
     <div class="quest-main">
       <div class="quest-name ${done ? 'strike' : ''}">${escapeHtml(q.name)}</div>
       ${metaParts.length ? `<div class="quest-meta">${metaParts.map(m => '<span>' + m + '</span>').join('')}</div>` : ''}
     </div>
+    <span class="qtier tier-${tier}">${tier}</span>
     <div class="pts-badge">+${q.points}</div>
     <button class="sub-btn ${subs.length ? 'has' : ''}" onclick="toggleSubPanel('${q.id}')" title="sub-tasks" aria-expanded="${expandedSubs.has(q.id)}" aria-label="sub-tasks for ${escapeHtml(q.name)}">≡${subs.length ? ' ' + doneSubs + '/' + subs.length : ''}</button>
     <button class="edit-btn" onclick="startEdit('${q.id}', '${kind}')" title="edit" aria-label="edit ${escapeHtml(q.name)}">✎</button>
@@ -2574,6 +2858,7 @@ function completeFeedback() {
       osc.start(); osc.stop(audioCtx.currentTime + 0.3);
     } catch (e) {}
   }
+  try { burst(lastPt.x, lastPt.y); } catch (e) {}
 }
 
 /* ============ PROFILE GATE ============ */
@@ -2737,6 +3022,171 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
     if (profiles) { try { localStorage.removeItem('questLogProfile'); } catch (e) {} }
   }
   initProfileGate();
+})();
+
+/* ===== explicit theme picker (settings), persisted + active highlight — redesign ===== */
+function highlightTheme(){
+  var cur = (typeof autoTheme!=='undefined' && autoTheme) ? 'auto' : currentTheme;
+  document.querySelectorAll('.theme-pick button').forEach(function(b){ b.classList.toggle('active', b.textContent.trim() === cur); });
+}
+function pickTheme(t){
+  if (t === 'auto'){ autoTheme = true; checkAutoTheme(); applyTheme(currentTheme); }
+  else { autoTheme = false; applyTheme(t); }
+  try { updateGreeting(); } catch(e){}
+  try { localStorage.setItem('questTheme', t); } catch(e){}
+  highlightTheme();
+}
+// restore saved theme on load (falls back to the app's auto default)
+(function(){ var s=null; try{ s=localStorage.getItem('questTheme'); }catch(e){} if (s){ pickTheme(s); } else { highlightTheme(); } })();
+
+/* ===== overview page: hexagon medallion + segmented daily-ring — redesign ===== */
+function buildOvRing(done,total){ var svg=document.getElementById('ovRing'); if(!svg) return; total=total||1;
+  var R=52,C=2*Math.PI*R,gap=total>1?6:0,seg=C/total-gap,html='';
+  for(var i=0;i<total;i++){ var off=-i*(C/total);
+    html+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+seg+' '+(C-seg)+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'; }
+  svg.innerHTML=html;
+}
+function buildOvWeek(){ var el=document.getElementById('ovWeek'); if(!el || typeof state==='undefined' || !state) return;
+  var hist=(state.loginHistory||[]), html='', t=new Date();
+  for(var i=6;i>=0;i--){ var d=new Date(t); d.setDate(d.getDate()-i);
+    var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    html+='<span class="wd'+(hist.indexOf(ds)>=0?' on':'')+(i===0?' today':'')+'"></span>'; }
+  el.innerHTML=html;
+}
+function renderOverview(){ if(typeof state==='undefined' || !state) return;
+  var rank=calcRank(state.lifetimePoints||0);
+  var r=document.getElementById('ovRank'); if(r) r.textContent=rank.level;
+  var xp=document.getElementById('ovXp'); if(xp) xp.textContent=rank.current+' / '+rank.req+' XP';
+  var isDone=(typeof KIND_CFG!=='undefined'&&KIND_CFG.daily)?KIND_CFG.daily.isDone:function(q){return q.done;};
+  var dailies=(state.dailyQuests||[]).filter(function(q){ try{return questActiveToday(q);}catch(e){return true;} });
+  var done=dailies.filter(function(q){ try{return isDone(q);}catch(e){return false;} }).length;
+  buildOvRing(done, dailies.length);
+  var fq=null; for(var i=0;i<dailies.length;i++){ if(!isDone(dailies[i])){ fq=dailies[i]; break; } }
+  var ft=document.getElementById('ovFocus'), fs=document.getElementById('ovFocusSub');
+  if(ft){ if(fq){ ft.textContent=fq.name; fs.textContent='+'+fq.points+' points · daily'; }
+    else if(dailies.length){ ft.textContent='All daily quests done ✓'; fs.textContent='nice work — '+done+'/'+dailies.length; }
+    else { ft.textContent='No daily quests yet'; fs.textContent='add one in Quests'; } }
+  buildOvWeek();
+}
+function ovBeginFocus(){ if(typeof ftRun!=='undefined' && !ftRun && typeof ftToggle==='function') ftToggle(); }
+function newDailyQuick(){ showView('quests'); try{ showSubTab('quests','daily'); }catch(e){}
+  var n=document.getElementById('dailyName'); if(n && n.offsetParent===null){ try{ toggleAddForm('dailyPanel'); }catch(e){} } if(n) n.focus(); }
+if (typeof render === 'function'){ var _ovOrigRender = render; render = function(){ _ovOrigRender.apply(this, arguments); try{ renderOverview(); }catch(e){} }; }
+if (typeof showView === 'function'){ var _svOrig = showView; showView = function(){ _svOrig.apply(this, arguments); var c=document.querySelector('.hud-center'); if(c) c.scrollTop=0; }; }
+
+/* ===== achievements recent-6 + show-all, and report today-summary — redesign ===== */
+function clampAch(){ var g=document.getElementById('achGrid'); if(!g) return; var n=g.children.length; var btn=document.getElementById('achToggle');
+  if(n>6){ if(!g.classList.contains('ach-collapsed')) g.classList.add('ach-collapsed');
+    if(!btn){ btn=document.createElement('button'); btn.id='achToggle'; btn.className='add-btn'; btn.style.marginTop='10px';
+      btn.onclick=function(){ var col=g.classList.toggle('ach-collapsed'); btn.textContent=col?('show all ('+g.children.length+')'):'show recent'; };
+      g.parentNode.insertBefore(btn, g.nextSibling); }
+    btn.style.display=''; btn.textContent=(g.classList.contains('ach-collapsed')?('show all ('+n+')'):'show recent');
+  } else if(btn){ btn.style.display='none'; g.classList.remove('ach-collapsed'); }
+}
+function fillReport(){ if(typeof state==='undefined' || !state) return;
+  var isDone=(typeof KIND_CFG!=='undefined'&&KIND_CFG.daily)?KIND_CFG.daily.isDone:function(q){return q.done;};
+  var dailies=(state.dailyQuests||[]).filter(function(q){ try{return questActiveToday(q);}catch(e){return true;} });
+  var done=dailies.filter(function(q){ try{return isDone(q);}catch(e){return false;} }).length;
+  var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
+  set('rptDone',done); set('rptPts',state.dailyActivityPoints||0); set('rptStreak',state.loginStreak||0); set('rptBest',state.bestStreak||0);
+
+  var nEl=document.getElementById('rptNarrative'); if(nEl){
+    var esc=(typeof escapeHtml==='function')?escapeHtml:function(s){return s;};
+    var N=dailies.length, pct=N?Math.round(100*done/N):0;
+    var fq=null; for(var i=0;i<dailies.length;i++){ if(!isDone(dailies[i])){ fq=dailies[i]; break; } }
+    var opener = !N ? 'No daily quests set yet.' : done===0 ? 'Fresh day, nothing cleared yet.' : (done===N ? 'Clean sweep —' : pct>=50 ? 'Solid progress —' : 'Slow start —');
+    var streakTxt = (state.loginStreak||0)>0 ? 'keeping your <b style="color:var(--ink)">'+state.loginStreak+'-day</b> login streak alive' : 'no active login streak yet';
+    var focusTxt = fq ? ' Your focus quest, <b style="color:var(--ink)">'+esc(fq.name)+'</b> (+'+fq.points+'), is still open.' : (N ? ' All daily quests are done — nice work.' : ' Add one in the Quests tab to get going.');
+    var catDone={}; dailies.forEach(function(q){ if(q.category && isDone(q)) catDone[q.category]=(catDone[q.category]||0)+1; });
+    var topCat=null,topN=0; for(var c in catDone){ if(catDone[c]>topN){ topN=catDone[c]; topCat=c; } }
+    var catTxt = topCat ? ' Strongest category today: <b style="color:var(--ink)">'+esc(topCat)+'</b>.' : '';
+    var body = N ? (' You’ve cleared <b style="color:var(--ink)">'+done+' of '+N+'</b> daily quests for <b style="color:var(--accent)">+'+(state.dailyActivityPoints||0)+'</b> activity points, '+streakTxt+'.') : '';
+    nEl.innerHTML = opener + body + focusTxt + catTxt;
+  }
+}
+if (typeof renderStatistics === 'function'){ var _rsOrig=renderStatistics; renderStatistics=function(){ _rsOrig.apply(this,arguments); try{clampAch();}catch(e){} try{fillReport();}catch(e){} }; }
+
+/* ===== dashboard module show/hide toggles (persisted) — redesign ===== */
+(function(){ var inputs=document.querySelectorAll('input[data-mod]'); if(!inputs.length) return;
+  function read(){ try{ return JSON.parse(localStorage.getItem('questMods'))||{}; }catch(e){ return {}; } }
+  function load(){ var h=read(); inputs.forEach(function(inp){ var on=h[inp.dataset.mod]!==false; inp.checked=on;
+    var el=document.getElementById(inp.dataset.mod); if(el) el.classList.toggle('mod-off', !on); }); }
+  inputs.forEach(function(inp){ inp.addEventListener('change', function(){
+    var el=document.getElementById(inp.dataset.mod); if(el) el.classList.toggle('mod-off', !inp.checked);
+    var h=read(); h[inp.dataset.mod]=inp.checked; try{ localStorage.setItem('questMods', JSON.stringify(h)); }catch(e){} }); });
+  load();
+})();
+
+/* ===== confetti on completion + keyboard shortcuts (redesign) ===== */
+var lastPt = { x: (typeof innerWidth!=='undefined'?innerWidth/2:0), y: 120 };
+addEventListener('pointerdown', function(e){ lastPt = { x:e.clientX, y:e.clientY }; }, true);
+function burst(x,y){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  var cs = getComputedStyle(document.body);
+  var cols = [ (cs.getPropertyValue('--accent')||'#e3b262').trim(), (cs.getPropertyValue('--ink')||'#f0e7d0').trim(), '#9bb56a' ];
+  for (var i=0;i<16;i++){ (function(i){
+    var p=document.createElement('div'); p.className='confetti';
+    p.style.left=x+'px'; p.style.top=y+'px'; p.style.background=cols[i%3];
+    document.body.appendChild(p);
+    var a=Math.random()*6.28, d=26+Math.random()*46;
+    requestAnimationFrame(function(){ p.style.transition='transform .7s cubic-bezier(.2,.7,.3,1), opacity .7s';
+      p.style.transform='translate('+(Math.cos(a)*d)+'px,'+(Math.sin(a)*d+70)+'px) rotate('+(Math.random()*360)+'deg)'; p.style.opacity='0'; });
+    setTimeout(function(){ p.remove(); }, 760);
+  })(i); }
+}
+addEventListener('keydown', function(e){
+  if (e.target && e.target.matches && e.target.matches('input,textarea')) return;
+  if (e.code === 'Space'){ e.preventDefault(); ftToggle(); }
+  if (e.key && e.key.toLowerCase() === 'n'){
+    showView('quests'); try{ showSubTab('quests','daily'); }catch(_){}
+    var n=document.getElementById('dailyName');
+    if (n && n.offsetParent === null){ try{ toggleAddForm('dailyPanel'); }catch(_){} }
+    if (n) n.focus();
+  }
+});
+
+/* ===== live clock + time-left (redesign) ===== */
+(function(){const c=document.getElementById('hudClock'),d=document.getElementById('hudDate'); if(!c) return;
+  const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function t(){const n=new Date(),p=x=>String(x).padStart(2,'0'); c.textContent=p(n.getHours())+':'+p(n.getMinutes());
+    const e=new Date(n); e.setHours(24,0,0,0); const ms=e-n;
+    d.innerHTML=DOW[n.getDay()]+' · '+n.getDate()+' '+MON[n.getMonth()].toUpperCase()+' · <b>'+Math.floor(ms/3.6e6)+'h '+Math.floor(ms%3.6e6/6e4)+'m left</b>';}
+  t(); setInterval(t,1000);})();
+
+/* ===== focus timer (redesign) ===== */
+var ftSecs=1500, ftRun=false, ftInt=null;
+function ftShow(){var v=document.getElementById('ftVal'); if(v) v.textContent=Math.floor(ftSecs/60)+':'+String(ftSecs%60).padStart(2,'0');}
+function ftToggle(){var b=document.getElementById('ftBtn'),m=document.getElementById('ftMode'); if(!b) return;
+  ftRun=!ftRun; b.textContent=ftRun?'Pause':'Start'; b.classList.toggle('primary',!ftRun); m.textContent=ftRun?'stay on target':'paused';
+  clearInterval(ftInt); if(ftRun) ftInt=setInterval(function(){ if(ftSecs>0){ftSecs--;ftShow();} else {ftRun=false;clearInterval(ftInt);b.textContent='Start';b.classList.add('primary');m.textContent='session complete';} },1000);}
+function ftReset(){clearInterval(ftInt); ftRun=false; ftSecs=1500; ftShow(); var b=document.getElementById('ftBtn'),m=document.getElementById('ftMode'); if(b){b.textContent='Start';b.classList.add('primary');} if(m)m.textContent='ready when you are';}
+ftShow();
+
+/* ===== dashboard feeds (free APIs, graceful fallback) — redesign rebuild ===== */
+(function(){
+  const $=id=>document.getElementById(id);
+  async function loadCrypto(){const el=$('crypto'); if(!el) return; const fb=[['BTC',64210,2.3],['ETH',3140,-1.1],['SOL',148,4.6]];
+    try{const j=await(await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana&vs_currencies=usd&include_24hr_change=true')).json();
+      render(el,[['BTC',j.bitcoin.usd,j.bitcoin.usd_24h_change],['ETH',j.ethereum.usd,j.ethereum.usd_24h_change],['SOL',j.solana.usd,j.solana.usd_24h_change]]);}
+    catch(e){render(el,fb);}
+    function render(el,rows){el.innerHTML=rows.map(([s,p,c])=>{const up=c>=0;return `<div class="mkt-row"><span class="mkt-sym">${s}</span><span class="mkt-price"><div>$${Number(p).toLocaleString(undefined,{maximumFractionDigits:p<10?4:0})}</div><div class="mkt-chg ${up?'up':'down'}">${up?'▲':'▼'} ${Math.abs(c).toFixed(1)}%</div></span></div>`;}).join('');}}
+  async function loadNews(){const el=$('news'); if(!el) return; const fb=[['Show HN: a self-hosted quest tracker','news.ycombinator.com',''],['The math behind gacha pity systems','arxiv.org',''],['Why monospace UIs are having a moment','css-tricks.com','']];
+    try{const ids=await(await fetch('https://hacker-news.firebaseio.com/v0/topstories.json')).json();
+      const items=await Promise.all(ids.slice(0,3).map(id=>fetch('https://hacker-news.firebaseio.com/v0/item/'+id+'.json').then(r=>r.json())));
+      render(el,items.map(it=>[it.title, it.url?new URL(it.url).hostname.replace('www.',''):'news.ycombinator.com', it.id]));}
+    catch(e){render(el,fb);}
+    function render(el,rows){el.innerHTML=rows.map(([t,h,id])=>`<a class="news-item" href="${id?'https://news.ycombinator.com/item?id='+id:'#'}" target="_blank" rel="noopener">${t}<div class="nmeta">${h}</div></a>`).join('');}}
+  async function loadApod(){const el=$('apod'); if(!el) return;
+    try{const j=await(await fetch('https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&thumbs=true')).json();
+      const img=j.media_type==='image'?j.url:(j.thumbnail_url||''); el.innerHTML=`${img?`<img class="apod-img" src="${img}" alt="">`:''}<div class="apod-title">${j.title||'NASA APOD'}</div><div class="apod-desc">${j.explanation||''}</div>`;}
+    catch(e){el.innerHTML='<div class="apod-title">Pillars of Creation</div><div class="apod-desc">Star-forming towers in the Eagle Nebula. (Sample — live feed unavailable.)</div>';}}
+  async function loadWeather(){const t=$('wxTemp'),d=$('wxDesc'),l=$('wxLoc'); if(!t) return;
+    const CODE={0:'Clear',1:'Mostly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',51:'Drizzle',61:'Light rain',63:'Rain',65:'Heavy rain',80:'Showers',95:'Storm'};
+    try{const g=await(await fetch('https://ipapi.co/json/')).json();
+      const w=await(await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${g.latitude}&longitude=${g.longitude}&current=temperature_2m,weather_code`)).json();
+      t.textContent=Math.round(w.current.temperature_2m)+'°'; d.textContent=CODE[w.current.weather_code]||'—'; l.textContent=(g.city||'')+' · auto via IP';}
+    catch(e){t.textContent='24°'; d.textContent='Light rain'; l.textContent='—';}}
+  loadCrypto(); loadNews(); loadApod(); loadWeather();
 })();
 </script>
 </body>
