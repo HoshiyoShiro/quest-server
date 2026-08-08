@@ -844,11 +844,14 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
   .hud{ height:100%; align-items:stretch; }
   .hud-left, .hud-right{ position:static; align-self:stretch; grid-row:1; max-height:100%; overflow-y:auto; overflow-x:hidden; }
   .hud-center{ align-self:stretch; grid-row:1; max-height:100%; overflow-y:auto; overflow-x:hidden; }
-  .hud-left::-webkit-scrollbar, .hud-right::-webkit-scrollbar, .hud-center::-webkit-scrollbar{ width:7px; }
-  .hud-left::-webkit-scrollbar-track, .hud-right::-webkit-scrollbar-track, .hud-center::-webkit-scrollbar-track{ background:transparent; }
-  .hud-left::-webkit-scrollbar-thumb, .hud-right::-webkit-scrollbar-thumb, .hud-center::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:0; }
-  .hud-left::-webkit-scrollbar-thumb:hover, .hud-right::-webkit-scrollbar-thumb:hover, .hud-center::-webkit-scrollbar-thumb:hover{ background:var(--accent-border); }
-  .hud-left, .hud-right, .hud-center{ scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }
+  .hud-left::-webkit-scrollbar, .hud-right::-webkit-scrollbar{ width:7px; }
+  .hud-left::-webkit-scrollbar-track, .hud-right::-webkit-scrollbar-track{ background:transparent; }
+  .hud-left::-webkit-scrollbar-thumb, .hud-right::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:0; }
+  .hud-left::-webkit-scrollbar-thumb:hover, .hud-right::-webkit-scrollbar-thumb:hover{ background:var(--accent-border); }
+  .hud-left, .hud-right{ scrollbar-width:thin; scrollbar-color:var(--border-strong) transparent; }
+  /* center pane scrolls but stays visually clean — no scrollbar chrome */
+  .hud-center::-webkit-scrollbar{ width:0; height:0; }
+  .hud-center{ scrollbar-width:none; -ms-overflow-style:none; }
   #overview.view.active{ min-height:100%; display:flex; flex-direction:column; }
   .ov-wrap{ flex:1; min-height:0; }
 }
