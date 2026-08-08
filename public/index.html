@@ -787,6 +787,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .ft-btn:hover{ border-color:var(--accent); color:var(--accent); }
 .ft-btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
 .ft-btn.primary:hover{ color:var(--accent-ink); opacity:.92; }
+.confetti{ position:fixed; width:7px; height:7px; border-radius:1px; pointer-events:none; z-index:9999; will-change:transform,opacity; }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -2721,6 +2722,7 @@ function completeFeedback() {
       osc.start(); osc.stop(audioCtx.currentTime + 0.3);
     } catch (e) {}
   }
+  try { burst(lastPt.x, lastPt.y); } catch (e) {}
 }
 
 /* ============ PROFILE GATE ============ */
@@ -2885,6 +2887,34 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
   }
   initProfileGate();
 })();
+
+/* ===== confetti on completion + keyboard shortcuts (redesign) ===== */
+var lastPt = { x: (typeof innerWidth!=='undefined'?innerWidth/2:0), y: 120 };
+addEventListener('pointerdown', function(e){ lastPt = { x:e.clientX, y:e.clientY }; }, true);
+function burst(x,y){
+  if (window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches) return;
+  var cs = getComputedStyle(document.body);
+  var cols = [ (cs.getPropertyValue('--accent')||'#e3b262').trim(), (cs.getPropertyValue('--ink')||'#f0e7d0').trim(), '#9bb56a' ];
+  for (var i=0;i<16;i++){ (function(i){
+    var p=document.createElement('div'); p.className='confetti';
+    p.style.left=x+'px'; p.style.top=y+'px'; p.style.background=cols[i%3];
+    document.body.appendChild(p);
+    var a=Math.random()*6.28, d=26+Math.random()*46;
+    requestAnimationFrame(function(){ p.style.transition='transform .7s cubic-bezier(.2,.7,.3,1), opacity .7s';
+      p.style.transform='translate('+(Math.cos(a)*d)+'px,'+(Math.sin(a)*d+70)+'px) rotate('+(Math.random()*360)+'deg)'; p.style.opacity='0'; });
+    setTimeout(function(){ p.remove(); }, 760);
+  })(i); }
+}
+addEventListener('keydown', function(e){
+  if (e.target && e.target.matches && e.target.matches('input,textarea')) return;
+  if (e.code === 'Space'){ e.preventDefault(); ftToggle(); }
+  if (e.key && e.key.toLowerCase() === 'n'){
+    showView('quests'); try{ showSubTab('quests','daily'); }catch(_){}
+    var n=document.getElementById('dailyName');
+    if (n && n.offsetParent === null){ try{ toggleAddForm('dailyPanel'); }catch(_){} }
+    if (n) n.focus();
+  }
+});
 
 /* ===== live clock + time-left (redesign) ===== */
 (function(){const c=document.getElementById('hudClock'),d=document.getElementById('hudDate'); if(!c) return;
