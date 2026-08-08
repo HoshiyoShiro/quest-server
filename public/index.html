@@ -812,9 +812,16 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 @media (max-width:1000px){ .ov-wrap{ min-height:auto; padding:20px 0 8px; } }
 .ring-wrap{ position:relative; width:clamp(200px,24vw,240px); aspect-ratio:1; }
 .ring-wrap svg.ring{ position:absolute; inset:0; }
-.ring-wrap svg.ring circle{ transition:stroke .3s ease; }
-.ov-wrap .medallion{ position:absolute; inset:30px; background:var(--surface); border:1px solid var(--border-strong); display:grid; place-items:center;
+.ring-wrap svg.ring circle{ transition:stroke .3s ease; animation:ring-pulse 2.6s ease-in-out infinite; }
+.ov-wrap .medallion{ position:absolute; inset:30px; background:var(--surface); border:1px solid var(--border-strong); display:grid; place-items:center; z-index:1;
   clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%); }
+/* rotating hex frame behind the medallion — spins continuously while the
+   rank number/text stays put and readable */
+.medallion-spin{ position:absolute; inset:22px; border:1.5px solid var(--accent-border);
+  clip-path:polygon(50% 1%, 94% 25%, 94% 75%, 50% 99%, 6% 75%, 6% 25%);
+  animation:hex-spin 16s linear infinite; pointer-events:none; opacity:.6; }
+@keyframes hex-spin{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+@keyframes ring-pulse{ 0%,100%{ filter:drop-shadow(0 0 0 transparent); } 50%{ filter:drop-shadow(0 0 4px var(--accent)); } }
 .rank-num{ font-family:var(--pixel); font-size:clamp(40px,5.5vw,52px); line-height:1; color:var(--accent); }
 .rank-word{ font-family:var(--pixel); font-size:9px; letter-spacing:.3em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
 .rank-xp{ font-size:10px; color:var(--dim); margin-top:7px; }
@@ -1057,6 +1064,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     <div class="ov-wrap">
       <div class="ring-wrap">
         <svg class="ring" viewBox="0 0 120 120" id="ovRing"></svg>
+        <div class="medallion-spin" aria-hidden="true"></div>
         <div class="medallion"><div><div class="rank-num num" id="ovRank">1</div><div class="rank-word">Rank</div><div class="rank-xp num" id="ovXp">0 / 100 XP</div></div></div>
       </div>
       <div class="core-eyebrow">Focus quest</div>
@@ -3205,9 +3213,9 @@ function pickTheme(t){
 
 /* ===== overview page: hexagon medallion + segmented daily-ring — redesign ===== */
 function buildOvRing(done,total){ var svg=document.getElementById('ovRing'); if(!svg) return; total=total||1;
-  var R=52,C=2*Math.PI*R,gap=total>1?6:0,seg=C/total-gap,html='';
+  var R=52,C=2*Math.PI*R,seg=C/total,cap=total>1?'butt':'round',html='';
   for(var i=0;i<total;i++){ var off=-i*(C/total);
-    html+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+seg+' '+(C-seg)+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'; }
+    html+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="7" stroke-linecap="'+cap+'" stroke-dasharray="'+seg+' '+(C-seg)+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'; }
   svg.innerHTML=html;
 }
 function buildOvWeek(){ var el=document.getElementById('ovWeek'); if(!el || typeof state==='undefined' || !state) return;
