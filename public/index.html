@@ -876,6 +876,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     <symbol id="i-shop" viewBox="0 0 24 24"><path d="M6.5 8h11l-1 11.5h-9z"/><path d="M9.2 8a2.8 2.8 0 0 1 5.6 0"/></symbol>
     <symbol id="i-quotes" viewBox="0 0 24 24"><path d="M5 6h14v9H9l-4 3.5z"/></symbol>
     <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 4v2M12 18v2M4.9 7.5l1.8 1M17.3 15.5l1.8 1M4.9 16.5l1.8-1M17.3 8.5l1.8-1"/></symbol>
   </defs></svg>
   <nav>
     <button id="nav-home">quest log</button>
@@ -886,6 +887,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <button onclick="showView('shop')" id="nav-shop"><svg class="nvic"><use href="#i-shop"/></svg>shop</button>
       <button onclick="showView('quotes')" id="nav-quotes"><svg class="nvic"><use href="#i-quotes"/></svg>quotes</button>
       <button onclick="showView('profile')" id="nav-profile"><svg class="nvic"><use href="#i-profile"/></svg>profile</button>
+      <button onclick="showView('settings')" id="nav-settings"><svg class="nvic"><use href="#i-settings"/></svg>settings</button>
     </div>
   </nav>
 
@@ -1153,7 +1155,11 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <div class="card-list" id="questReport"></div>
     </div>
 
-    <div class="section-title">dashboard modules</div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div id="settings" class="view">
+    <div class="section-title">dashboard modules <span class="section-sub">show or hide the right-rail widgets</span></div>
     <div class="widget" style="display:block;">
       <label class="modrow"><span>Weather</span><span class="sw"><input type="checkbox" data-mod="mod-weather" checked><i></i></span></label>
       <label class="modrow"><span>Markets · crypto</span><span class="sw"><input type="checkbox" data-mod="mod-markets" checked><i></i></span></label>
