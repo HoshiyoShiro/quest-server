@@ -802,6 +802,10 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .theme-pick button, .pref-btn{ font-family:var(--mono); font-size:11px; background:var(--surface-2); border:1px solid var(--border-strong); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; transition:.15s; }
 .theme-pick button:hover, .pref-btn:hover{ border-color:var(--accent); color:var(--accent); }
 .theme-pick button.active{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent-border); }
+/* quest difficulty tier chip */
+.qtier{ font-family:var(--pixel); font-size:8px; text-transform:uppercase; letter-spacing:.06em; padding:4px 7px; border-radius:5px; border:1px solid var(--border-strong); color:var(--dim); flex-shrink:0; white-space:nowrap; align-self:center; }
+.qtier.tier-hard{ color:var(--danger); border-color:var(--danger); }
+.qtier.tier-normal{ color:var(--accent); border-color:var(--accent-border); }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -1892,12 +1896,14 @@ function makeQuestCard(q, kind) {
   const subs = q.subs || [];
   const doneSubs = subs.filter(s => s.done).length;
   const pop = done && q.id === lastToggledId ? ' pop' : '';
+  const tier = q.points >= 40 ? 'hard' : q.points >= 20 ? 'normal' : 'easy';
   card.innerHTML = `
     <button type="button" class="check ${done ? 'checked' : ''}${pop}" role="checkbox" aria-checked="${done}" aria-label="${escapeHtml(q.name)}" ${active ? `onclick="${cfg.toggle}('${q.id}')"` : 'disabled'}>${done ? '✓' : ''}</button>
     <div class="quest-main">
       <div class="quest-name ${done ? 'strike' : ''}">${escapeHtml(q.name)}</div>
       ${metaParts.length ? `<div class="quest-meta">${metaParts.map(m => '<span>' + m + '</span>').join('')}</div>` : ''}
     </div>
+    <span class="qtier tier-${tier}">${tier}</span>
     <div class="pts-badge">+${q.points}</div>
     <button class="sub-btn ${subs.length ? 'has' : ''}" onclick="toggleSubPanel('${q.id}')" title="sub-tasks" aria-expanded="${expandedSubs.has(q.id)}" aria-label="sub-tasks for ${escapeHtml(q.name)}">≡${subs.length ? ' ' + doneSubs + '/' + subs.length : ''}</button>
     <button class="edit-btn" onclick="startEdit('${q.id}', '${kind}')" title="edit" aria-label="edit ${escapeHtml(q.name)}">✎</button>
