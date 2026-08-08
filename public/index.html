@@ -833,6 +833,25 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .rpt-cell{ background:var(--surface); border:1px solid var(--border); border-radius:var(--r); padding:14px 16px; box-shadow:var(--soft); }
 .rpt-num{ font-family:var(--pixel); font-size:22px; color:var(--accent); }
 .rpt-label{ font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); margin-top:6px; }
+
+/* points dim until row hover */
+.quest-card .pts-badge{ color:var(--dim); background:transparent; border-color:var(--border); transition:color .15s, background .15s, border-color .15s; }
+.quest-card:hover .pts-badge{ color:var(--accent); background:var(--accent-dim); border-color:var(--accent-border); }
+
+/* keep the rank centred in the medallion */
+.ov-wrap .rank-xp{ white-space:nowrap; }
+
+/* hide "begin focus" when the timer module is turned off */
+.hud:has(#mod-focus.mod-off) #ovBegin{ display:none !important; }
+
+/* phone quick-add FAB */
+#qFab{ display:none; }
+@media (max-width:1000px){
+  #qFab{ display:inline-flex; align-items:center; gap:7px; position:fixed; right:16px; bottom:16px; z-index:50;
+    background:var(--accent); color:var(--accent-ink); border:none; border-radius:999px; padding:13px 20px;
+    font-family:var(--mono); font-size:12px; font-weight:600; cursor:pointer; box-shadow:0 6px 20px -6px rgba(0,0,0,.5); }
+  #qFab .nvic{ stroke:var(--accent-ink); }
+}
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -1257,6 +1276,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 
   </main>
 </div><!-- /hud -->
+<button id="qFab" onclick="newDailyQuick()" aria-label="new quest"><svg class="nvic"><use href="#i-quests"/></svg>+ quest</button>
 
   <datalist id="catList"></datalist>
 
@@ -2993,10 +3013,11 @@ function pickTheme(t){
 (function(){ var s=null; try{ s=localStorage.getItem('questTheme'); }catch(e){} if (s){ pickTheme(s); } else { highlightTheme(); } })();
 
 /* ===== overview page: hexagon medallion + segmented daily-ring — redesign ===== */
+function hexPath(cx,cy,r){ var p=[]; for(var k=0;k<6;k++){ var a=(-90+k*60)*Math.PI/180; p.push((cx+r*Math.cos(a)).toFixed(2)+' '+(cy+r*Math.sin(a)).toFixed(2)); } return 'M'+p.join(' L ')+' Z'; }
 function buildOvRing(done,total){ var svg=document.getElementById('ovRing'); if(!svg) return; total=total||1;
-  var R=52,C=2*Math.PI*R,gap=total>1?6:0,seg=C/total-gap,html='';
-  for(var i=0;i<total;i++){ var off=-i*(C/total);
-    html+='<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="7" stroke-linecap="round" stroke-dasharray="'+seg+' '+(C-seg)+'" stroke-dashoffset="'+off+'" transform="rotate(-90 60 60)"/>'; }
+  var r=52, d=hexPath(60,60,r), P=6*r, gap=total>1?8:0, seg=P/total-gap, html='';
+  for(var i=0;i<total;i++){ var off=-i*(P/total);
+    html+='<path d="'+d+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="'+seg+' '+(P-seg)+'" stroke-dashoffset="'+off+'"/>'; }
   svg.innerHTML=html;
 }
 function buildOvWeek(){ var el=document.getElementById('ovWeek'); if(!el || typeof state==='undefined' || !state) return;
@@ -3022,6 +3043,8 @@ function renderOverview(){ if(typeof state==='undefined' || !state) return;
   buildOvWeek();
 }
 function ovBeginFocus(){ if(typeof ftRun!=='undefined' && !ftRun && typeof ftToggle==='function') ftToggle(); }
+function newDailyQuick(){ showView('quests'); try{ showSubTab('quests','daily'); }catch(e){}
+  var n=document.getElementById('dailyName'); if(n && n.offsetParent===null){ try{ toggleAddForm('dailyPanel'); }catch(e){} } if(n) n.focus(); }
 if (typeof render === 'function'){ var _ovOrigRender = render; render = function(){ _ovOrigRender.apply(this, arguments); try{ renderOverview(); }catch(e){} }; }
 
 /* ===== achievements recent-6 + show-all, and report today-summary — redesign ===== */
