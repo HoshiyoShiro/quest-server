@@ -846,7 +846,8 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
   .hud-left::-webkit-scrollbar, .hud-right::-webkit-scrollbar, .hud-center::-webkit-scrollbar{ width:7px; }
   .hud-left::-webkit-scrollbar-thumb, .hud-right::-webkit-scrollbar-thumb, .hud-center::-webkit-scrollbar-thumb{ background:var(--border-strong); border-radius:4px; }
   .hud-left, .hud-right, .hud-center{ scrollbar-width:thin; }
-  .ov-wrap{ min-height:100%; }
+  #overview.view.active{ min-height:100%; display:flex; flex-direction:column; }
+  .ov-wrap{ flex:1; min-height:0; }
 }
 
 /* points dim until row hover */
