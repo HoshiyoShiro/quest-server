@@ -1143,6 +1143,23 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     </div>
 
     <div class="subtab-panel" id="subtab-quests-monthly">
+      <div class="section-title">monthly activity <span class="section-sub" id="monthlyResetLabel">resets in --</span></div>
+      <div class="activity-panel">
+        <div class="activity-summary">
+          <div class="activity-icon">📆</div>
+          <div>
+            <div class="activity-num" id="monthlyActivityPointsDisplay">0</div>
+            <div class="activity-sub">activity pts this month</div>
+          </div>
+        </div>
+        <div class="activity-bar-wrap">
+          <div class="activity-bar-track">
+            <div class="activity-bar-fill" id="monthlyActivityBarFill" style="width:0%"></div>
+            <div id="monthlyActivityNodes"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="section-title">monthly quests <span class="section-sub">resets every month</span>
         <button class="add-toggle-btn" id="toggle-monthlyPanel" onclick="toggleAddForm('monthlyPanel')">+ new quest</button>
       </div>
@@ -1749,7 +1766,8 @@ function defaultState() {
     seasonKey: getSeasonKey(), seasonXp: 0, claimedMilestones: [],
     unlockedAchievements: {}, pinnedRewardId: null,
     dailyActivityPoints: 0, dailyActivityClaimed: [],
-    weeklyActivityPoints: 0, weeklyActivityClaimed: []
+    weeklyActivityPoints: 0, weeklyActivityClaimed: [],
+    monthlyActivityPoints: 0, monthlyActivityClaimed: []
   };
 }
 
@@ -1769,6 +1787,15 @@ const WEEKLY_ACTIVITY_MILESTONES = [
   { pts: 180, reward: 45 },
   { pts: 240, reward: 60 },
   { pts: 300, reward: 80 }
+];
+
+const MONTHLY_ACTIVITY_MAX = 500;
+const MONTHLY_ACTIVITY_MILESTONES = [
+  { pts: 100, reward: 25 },
+  { pts: 200, reward: 45 },
+  { pts: 300, reward: 70 },
+  { pts: 400, reward: 100 },
+  { pts: 500, reward: 150 }
 ];
 
 // Takes whatever raw JSON came back from the server (possibly {} for a
@@ -1897,6 +1924,26 @@ function applyDefaultsAndRollover(raw) {
       q.completedThisMonth = false;
       if (q.subs) q.subs.forEach(s => { s.done = false; });
     });
+
+    // same auto-collect for monthly activity milestones before they reset
+    let autoMonthlyReward = 0;
+    MONTHLY_ACTIVITY_MILESTONES.forEach(m => {
+      if (data.monthlyActivityPoints >= m.pts && !data.monthlyActivityClaimed.includes(m.pts)) {
+        autoMonthlyReward += m.reward;
+      }
+    });
+    if (autoMonthlyReward > 0) {
+      data.points += autoMonthlyReward;
+      data.lifetimePoints += autoMonthlyReward;
+      data.seasonXp = Math.max(0, data.seasonXp + autoMonthlyReward);
+      data.history.push({ name: 'Auto-collected monthly activity reward (+' + autoMonthlyReward + ')', date: today, type: 'activity' });
+      if (!pendingAutoCollect) pendingAutoCollect = { total: 0, parts: [] };
+      pendingAutoCollect.total += autoMonthlyReward;
+      pendingAutoCollect.parts.push('monthly activity (+' + autoMonthlyReward + ')');
+    }
+
+    data.monthlyActivityPoints = 0;
+    data.monthlyActivityClaimed = [];
     data.lastMonthKey = monthKey;
   }
 
@@ -2261,6 +2308,12 @@ function render() {
     milestones: WEEKLY_ACTIVITY_MILESTONES, claimed: state.weeklyActivityClaimed,
     displayEl: 'weeklyActivityPointsDisplay', fillEl: 'weeklyActivityBarFill', nodesEl: 'weeklyActivityNodes',
     claimFn: claimWeeklyActivityMilestone
+  });
+  renderActivityBar({
+    points: state.monthlyActivityPoints, max: MONTHLY_ACTIVITY_MAX,
+    milestones: MONTHLY_ACTIVITY_MILESTONES, claimed: state.monthlyActivityClaimed,
+    displayEl: 'monthlyActivityPointsDisplay', fillEl: 'monthlyActivityBarFill', nodesEl: 'monthlyActivityNodes',
+    claimFn: claimMonthlyActivityMilestone
   });
   updateResetCountdown();
 
@@ -2696,6 +2749,7 @@ function toggleMonthly(id) {
     logDayDone(-1);
     losePoints(q.points);
     state.completedCount = Math.max(0, state.completedCount - 1);
+    state.monthlyActivityPoints = Math.max(0, state.monthlyActivityPoints - q.points);
   } else {
     q.completedThisMonth = true;
     q.monthStreak += 1;
@@ -2705,6 +2759,7 @@ function toggleMonthly(id) {
     logDayDone(1);
     gainPoints(q.points);
     state.completedCount += 1;
+    state.monthlyActivityPoints = Math.min(MONTHLY_ACTIVITY_MAX, state.monthlyActivityPoints + q.points);
   }
   afterAction();
 }
@@ -2849,6 +2904,18 @@ function claimActivityMilestone(pts) {
   showReveal('⚡', 'Activity Reward', '+' + m.reward + ' points');
 }
 
+function claimMonthlyActivityMilestone(pts) {
+  if (state.monthlyActivityPoints < pts || state.monthlyActivityClaimed.includes(pts)) return;
+  const m = MONTHLY_ACTIVITY_MILESTONES.find(x => x.pts === pts);
+  state.monthlyActivityClaimed.push(pts);
+  state.points += m.reward;
+  state.lifetimePoints += m.reward;
+  addSeasonXp(m.reward);
+  state.history.push({ name: 'Monthly activity reward (+' + m.reward + ')', date: todayStr(), type: 'activity' });
+  afterAction();
+  showReveal('📆', 'Monthly Activity Reward', '+' + m.reward + ' points');
+}
+
 function updateResetCountdown() {
   const now = new Date();
   let nextReset = new Date(now.getFullYear(), now.getMonth(), now.getDate(), DAY_RESET_HOUR, 0, 0);
@@ -2866,6 +2933,11 @@ function updateResetCountdown() {
   const wHrs = Math.floor((wLeft % 86400000) / 3600000);
   const wEl = document.getElementById('weeklyResetLabel');
   if (wEl) wEl.textContent = 'resets in ' + (wDays > 0 ? wDays + 'd ' : '') + wHrs + 'h';
+  const nextMonth1st = new Date(shifted.getFullYear(), shifted.getMonth() + 1, 1, DAY_RESET_HOUR, 0, 0);
+  const mLeft = nextMonth1st - now;
+  const mDays = Math.floor(mLeft / 86400000);
+  const mEl = document.getElementById('monthlyResetLabel');
+  if (mEl) mEl.textContent = 'resets in ' + mDays + 'd';
 }
 setInterval(updateResetCountdown, 60000);
 
