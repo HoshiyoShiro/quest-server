@@ -801,6 +801,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .theme-pick{ display:flex; gap:6px; flex-wrap:wrap; }
 .theme-pick button, .pref-btn{ font-family:var(--mono); font-size:11px; background:var(--surface-2); border:1px solid var(--border-strong); color:var(--ink); border-radius:8px; padding:6px 12px; cursor:pointer; transition:.15s; }
 .theme-pick button:hover, .pref-btn:hover{ border-color:var(--accent); color:var(--accent); }
+.theme-pick button.active{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent-border); }
 .hud .hero{ margin-bottom:0; }
 .hud .hero h1{ font-size:18px; }
 .hud .widgets{ grid-template-columns:1fr; gap:12px; margin-bottom:0; }
@@ -2919,12 +2920,20 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
   initProfileGate();
 })();
 
-/* ===== explicit theme picker (settings) — redesign ===== */
+/* ===== explicit theme picker (settings), persisted + active highlight — redesign ===== */
+function highlightTheme(){
+  var cur = (typeof autoTheme!=='undefined' && autoTheme) ? 'auto' : currentTheme;
+  document.querySelectorAll('.theme-pick button').forEach(function(b){ b.classList.toggle('active', b.textContent.trim() === cur); });
+}
 function pickTheme(t){
   if (t === 'auto'){ autoTheme = true; checkAutoTheme(); applyTheme(currentTheme); }
   else { autoTheme = false; applyTheme(t); }
   try { updateGreeting(); } catch(e){}
+  try { localStorage.setItem('questTheme', t); } catch(e){}
+  highlightTheme();
 }
+// restore saved theme on load (falls back to the app's auto default)
+(function(){ var s=null; try{ s=localStorage.getItem('questTheme'); }catch(e){} if (s){ pickTheme(s); } else { highlightTheme(); } })();
 
 /* ===== dashboard module show/hide toggles (persisted) — redesign ===== */
 (function(){ var inputs=document.querySelectorAll('input[data-mod]'); if(!inputs.length) return;
