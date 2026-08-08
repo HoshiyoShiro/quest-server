@@ -57,23 +57,24 @@ body.theme-rain {
   --scanline: rgba(0, 0, 0, 0.05);
 }
 body.theme-angels {
-  /* Angels of Delusion (ZZZ) — idol stage: pink accent, teal pop, soft white on deep purple */
-  color-scheme: dark;
-  --bg: #150f1d; --surface: #201830; --surface-2: #2b2140;
-  --border: #3c2f56; --border-strong: #574173;
-  --ink: #f4e9f3; --dim: #b19bc0;
-  --accent: #ff8fc7; --accent-ink: #1c0f18;
-  --accent-dim: rgba(255, 143, 199, 0.15); --accent-border: rgba(255, 143, 199, 0.42);
-  --good: #5fd8cf; --danger: #ff7a9c;
-  --hshadow: rgba(0, 0, 0, 0.5); --shadow: rgba(0, 0, 0, 0.5);
-  --scanline: rgba(255, 255, 255, 0.03);
+  /* Angels of Delusion (ZZZ) — pastel idol: bubblegum pink + mint on cream, plum ink */
+  color-scheme: light;
+  --bg: #ffe6f0; --surface: #fff6f1; --surface-2: #ffe0ec;
+  --border: #f3c3d7; --border-strong: #e79cbb;
+  --ink: #5a3a55; --dim: #9a7690;
+  --accent: #ff4d94; --accent-ink: #fff5fa;
+  --accent-dim: rgba(255, 77, 148, 0.12); --accent-border: rgba(255, 77, 148, 0.42);
+  --good: #2fae95; --danger: #e0567a;
+  --hshadow: rgba(255, 255, 255, 0.6); --shadow: rgba(190, 120, 150, 0.22);
+  --scanline: rgba(120, 60, 90, 0.03);
 }
 #angels-bg{ background:
-  radial-gradient(120% 90% at 50% -10%, rgba(255,143,199,.10), transparent 55%),
-  linear-gradient(180deg, #1a1226, #150f1d 60%, #0d0913); }
-.idol-glow{ position:absolute; border-radius:50%; filter:blur(70px); opacity:.5; animation:idolFloat 16s ease-in-out infinite; }
-.idol-glow.g1{ width:340px; height:340px; background:rgba(255,143,199,.5); top:8%; left:12%; }
-.idol-glow.g2{ width:300px; height:300px; background:rgba(95,216,207,.4); bottom:10%; right:14%; animation-delay:-8s; }
+  radial-gradient(120% 90% at 50% -10%, rgba(255,140,190,.18), transparent 55%),
+  radial-gradient(80% 60% at 88% 112%, rgba(95,207,174,.16), transparent 60%),
+  linear-gradient(180deg, #ffeaf2, #ffe1ec 60%, #ffd7e6); }
+.idol-glow{ position:absolute; border-radius:50%; filter:blur(72px); opacity:.55; animation:idolFloat 16s ease-in-out infinite; }
+.idol-glow.g1{ width:340px; height:340px; background:rgba(255,120,180,.5); top:8%; left:12%; }
+.idol-glow.g2{ width:300px; height:300px; background:rgba(120,220,195,.5); bottom:10%; right:14%; animation-delay:-8s; }
 @keyframes idolFloat{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(30px,-24px); } }
 
 body {
@@ -1476,7 +1477,7 @@ function checkAutoTheme() {
   updateGreeting();
 }
 
-const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14', angels: '#150f1d' };
+const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14', angels: '#ffe6f0' };
 
 function applyTheme(theme) {
   currentTheme = theme;
