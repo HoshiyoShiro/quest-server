@@ -56,6 +56,25 @@ body.theme-rain {
   --hshadow: rgba(0, 0, 0, 0.5); --shadow: rgba(0, 0, 0, 0.5);
   --scanline: rgba(0, 0, 0, 0.05);
 }
+body.theme-angels {
+  /* Angels of Delusion (ZZZ) — idol stage: pink accent, teal pop, soft white on deep purple */
+  color-scheme: dark;
+  --bg: #150f1d; --surface: #201830; --surface-2: #2b2140;
+  --border: #3c2f56; --border-strong: #574173;
+  --ink: #f4e9f3; --dim: #b19bc0;
+  --accent: #ff8fc7; --accent-ink: #1c0f18;
+  --accent-dim: rgba(255, 143, 199, 0.15); --accent-border: rgba(255, 143, 199, 0.42);
+  --good: #5fd8cf; --danger: #ff7a9c;
+  --hshadow: rgba(0, 0, 0, 0.5); --shadow: rgba(0, 0, 0, 0.5);
+  --scanline: rgba(255, 255, 255, 0.03);
+}
+#angels-bg{ background:
+  radial-gradient(120% 90% at 50% -10%, rgba(255,143,199,.10), transparent 55%),
+  linear-gradient(180deg, #1a1226, #150f1d 60%, #0d0913); }
+.idol-glow{ position:absolute; border-radius:50%; filter:blur(70px); opacity:.5; animation:idolFloat 16s ease-in-out infinite; }
+.idol-glow.g1{ width:340px; height:340px; background:rgba(255,143,199,.5); top:8%; left:12%; }
+.idol-glow.g2{ width:300px; height:300px; background:rgba(95,216,207,.4); bottom:10%; right:14%; animation-delay:-8s; }
+@keyframes idolFloat{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(30px,-24px); } }
 
 body {
   font-family: var(--mono);
@@ -948,6 +967,10 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
   <div id="rain-container"></div>
   <div id="lightning" class="lightning"></div>
 </div>
+<div id="angels-bg" class="bg-layer">
+  <div class="idol-glow g1"></div>
+  <div class="idol-glow g2"></div>
+</div>
 <div class="vignette"></div>
 <div class="grain"></div>
 
@@ -1335,6 +1358,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
           <button onclick="pickTheme('stars')">stars</button>
           <button onclick="pickTheme('fog')">fog</button>
           <button onclick="pickTheme('rain')">rain</button>
+          <button onclick="pickTheme('angels')">angels</button>
           <button onclick="pickTheme('auto')">auto</button>
         </span>
       </label>
@@ -1388,7 +1412,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 /* ============ THEME / AMBIENCE ============ */
 let currentTheme = 'stars';
 let autoTheme = true;
-const themes = ['stars', 'fog', 'rain'];
+const themes = ['stars', 'fog', 'rain', 'angels'];
 
 function createStars() {
   const container = document.getElementById('stars-container');
@@ -1452,7 +1476,7 @@ function checkAutoTheme() {
   updateGreeting();
 }
 
-const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14' };
+const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14', angels: '#150f1d' };
 
 function applyTheme(theme) {
   currentTheme = theme;
