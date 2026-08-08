@@ -808,7 +808,8 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 .qtier.tier-normal{ color:var(--accent); border-color:var(--accent-border); }
 
 /* ===== OVERVIEW page (hexagon medallion stage) ===== */
-.ov-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:32px 0; min-height:62vh; justify-content:center; }
+.ov-wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:24px 0; min-height:calc(100vh - 120px); justify-content:center; }
+@media (max-width:1000px){ .ov-wrap{ min-height:auto; padding:20px 0 8px; } }
 .ring-wrap{ position:relative; width:clamp(200px,24vw,240px); aspect-ratio:1; }
 .ring-wrap svg.ring{ position:absolute; inset:0; }
 .ring-wrap svg.ring circle{ transition:stroke .3s ease; }
@@ -3017,7 +3018,7 @@ function hexPath(cx,cy,r){ var p=[]; for(var k=0;k<6;k++){ var a=(-90+k*60)*Math
 function buildOvRing(done,total){ var svg=document.getElementById('ovRing'); if(!svg) return; total=total||1;
   var r=52, d=hexPath(60,60,r), P=6*r, gap=total>1?8:0, seg=P/total-gap, html='';
   for(var i=0;i<total;i++){ var off=-i*(P/total);
-    html+='<path d="'+d+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="'+seg+' '+(P-seg)+'" stroke-dashoffset="'+off+'"/>'; }
+    html+='<path d="'+d+'" fill="none" stroke="'+(i<done?'var(--accent)':'var(--border-strong)')+'" stroke-width="6" stroke-linecap="butt" stroke-linejoin="miter" stroke-dasharray="'+seg+' '+(P-seg)+'" stroke-dashoffset="'+off+'"/>'; }
   svg.innerHTML=html;
 }
 function buildOvWeek(){ var el=document.getElementById('ovWeek'); if(!el || typeof state==='undefined' || !state) return;
