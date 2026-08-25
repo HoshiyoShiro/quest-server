@@ -662,14 +662,15 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
    new theme gets the ledger for free. */
 
 .led-stats {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr;
   gap: 10px; margin-bottom: 18px;
 }
+@media (max-width: 1000px) { .led-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .led-stats { grid-template-columns: 1fr; } }
 .led-stat {
   background: var(--surface); border: 1px solid var(--border);
   padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
 }
-.led-stat.wide { grid-column: span 2; }
 .led-stat-label {
   font-family: var(--pixel); font-size: 9px; letter-spacing: 1px;
   text-transform: uppercase; color: var(--dim);
@@ -685,13 +686,19 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
 .led-stat-value.expense, .expense { color: var(--danger); }
 
 .led-filters {
-  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch;
+  background: var(--surface-2); border: 1px dashed var(--border-strong);
+  border-radius: 2px; padding: 12px 14px; margin-bottom: 14px;
 }
 .led-filters select, .led-filters input {
-  background: var(--surface); border: 1px solid var(--border); color: var(--ink);
-  font-family: var(--mono); font-size: 12px; padding: 6px 8px;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 2px;
+  padding: 9px 12px; font-size: 12.5px; color: var(--ink);
+  font-family: var(--mono); outline: none;
 }
+.led-filters select:focus, .led-filters input:focus { border-color: var(--accent); }
+.led-filters input::placeholder { color: var(--dim); opacity: 0.7; }
 .led-filters input[type="text"] { min-width: 150px; flex: 1; }
+.led-filters input[type="date"] { color: var(--dim); }
 
 .led-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
 .led-form label {
@@ -701,17 +708,26 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
 }
 .led-form label.grow { flex: 1; min-width: 160px; }
 .led-form input, .led-form select {
-  background: var(--surface-2); border: 1px solid var(--border); color: var(--ink);
-  font-family: var(--mono); font-size: 13px; padding: 7px 9px; text-transform: none;
-  letter-spacing: 0;
+  background: var(--bg); border: 1px solid var(--border); border-radius: 2px;
+  padding: 9px 12px; font-size: 12.5px; color: var(--ink);
+  font-family: var(--mono); outline: none; text-transform: none; letter-spacing: 0;
 }
-.led-form input[type="number"] { width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+.led-form input:focus, .led-form select:focus { border-color: var(--accent); }
+.led-form input::placeholder { color: var(--dim); opacity: 0.7; }
+.led-form input[type="number"] {
+  width: 120px; text-align: right; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.led-form input[type="number"]::-webkit-inner-spin-button,
+.led-form input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 
 #bulkText {
-  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
-  color: var(--ink); font-family: var(--mono); font-size: 12.5px; padding: 10px;
-  line-height: 1.6; resize: vertical;
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 2px; color: var(--ink); font-family: var(--mono);
+  font-size: 12.5px; padding: 10px 12px; line-height: 1.6; resize: vertical; outline: none;
 }
+#bulkText:focus { border-color: var(--accent); }
+#bulkText::placeholder { color: var(--dim); opacity: 0.7; }
 
 .led-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-family: var(--mono); }
 .led-table th {
@@ -748,11 +764,14 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
 .acc-actions { display: flex; gap: 6px; margin-top: 2px; }
 
 .mini-btn {
-  background: transparent; border: 1px solid var(--border); color: var(--dim);
-  font-family: var(--mono); font-size: 11px; padding: 3px 8px; cursor: pointer;
+  background: transparent; border: 1px solid var(--accent-border); color: var(--accent);
+  font-family: var(--pixel); font-size: 9px; letter-spacing: 0.02em;
+  border-radius: 2px; padding: 5px 12px; cursor: pointer;
+  transition: all 0.15s ease; white-space: nowrap;
 }
-.mini-btn:hover { border-color: var(--accent-border); color: var(--ink); }
-.mini-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+.mini-btn:hover { background: var(--accent-dim); }
+.mini-btn.danger { border-color: var(--border); color: var(--dim); }
+.mini-btn.danger:hover { background: transparent; border-color: var(--danger); color: var(--danger); }
 
 .cat-group { margin-bottom: 8px; }
 .cat-row {
@@ -784,7 +803,6 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
 }
 
 @media (max-width: 640px) {
-  .led-stat.wide { grid-column: span 2; }
   .led-form label.grow { min-width: 100%; }
   .led-filters input[type="text"] { min-width: 100%; }
 }
@@ -1558,11 +1576,10 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       </div>
     </div>
 
-    <div class="subtabs" id="ledger-subtabs">
+    <div class="subtab-group" id="ledger-subtabs">
       <button class="subtab-btn active" id="subtab-btn-ledger-entries" onclick="showSubTab('ledger','entries')">entries</button>
       <button class="subtab-btn" id="subtab-btn-ledger-add" onclick="showSubTab('ledger','add')">add</button>
       <button class="subtab-btn" id="subtab-btn-ledger-setup" onclick="showSubTab('ledger','setup')">accounts &amp; categories</button>
-      <button class="subtab-btn" id="subtab-btn-ledger-data" onclick="showSubTab('ledger','data')">import / export</button>
     </div>
 
     <!-- entries -->
@@ -1674,23 +1691,6 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       </div>
     </div>
 
-    <!-- import / export -->
-    <div class="subtab-panel" id="subtab-ledger-data">
-      <div class="section-title">ledger data <span class="section-sub">separate from the profile export</span></div>
-      <div class="widget" style="display:block;">
-        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-          <button class="add-btn" onclick="exportLedger()">⬇ export ledger (.json)</button>
-          <button class="add-btn" onclick="exportLedgerCsv()">⬇ export view (.csv)</button>
-          <button class="add-btn" onclick="document.getElementById('ledgerImportFile').click()">⬆ import ledger (.json)</button>
-        </div>
-        <input type="file" id="ledgerImportFile" accept="application/json,.json" class="hidden" onchange="importLedgerFile(this)">
-        <div class="info-note" style="margin-top:10px;">
-          the JSON export round-trips everything: accounts, categories and entries. importing asks whether to
-          replace the ledger or merge into it — a merge matches accounts and categories by name and gives every
-          entry a fresh id, so importing the same file twice duplicates rows rather than silently overwriting them.
-          the CSV export writes whatever the entries filter is currently showing, for a spreadsheet.
-          to go the other way, paste CSV into bulk insert.
-        </div>
       </div>
     </div>
 
@@ -1734,6 +1734,22 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       </div>
       <input type="file" id="importFile" accept="application/json,.json" class="hidden">
       <div class="info-note" style="margin-top:10px;">export downloads everything for this profile as JSON. import replaces this profile's data with a previously exported file (server keeps 7 daily backups as safety net).</div>
+    </div>
+
+    <div class="section-title">ledger data <span class="section-sub">the money side, on its own</span></div>
+    <div class="widget" style="display:block;">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="add-btn" onclick="exportLedger()">⬇ export ledger (.json)</button>
+        <button class="add-btn" onclick="exportLedgerCsv()">⬇ export entries (.csv)</button>
+        <button class="add-btn" onclick="document.getElementById('ledgerImportFile').click()">⬆ import ledger (.json)</button>
+      </div>
+      <input type="file" id="ledgerImportFile" accept="application/json,.json" class="hidden" onchange="importLedgerFile(this)">
+      <div class="info-note" style="margin-top:10px;">
+        the JSON export round-trips accounts, categories and entries. importing asks whether to replace the
+        ledger or merge into it — a merge matches on name and gives every entry a fresh id, so importing the
+        same file twice duplicates rows rather than silently overwriting them. the CSV export writes whatever
+        the ledger's entries filter is currently showing; to go the other way, paste CSV into bulk insert.
+      </div>
     </div>
   </div>
 
