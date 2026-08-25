@@ -1,6 +1,6 @@
 // Network-first cache: fresh when online, cached fallback when offline.
 // API requests are never cached — quest state must not go stale.
-const CACHE = 'quest-log-v8';
+const CACHE = 'quest-log-v9';
 
 self.addEventListener('install', () => self.skipWaiting());
 

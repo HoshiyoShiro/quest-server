@@ -34,6 +34,27 @@ body.theme-stars {
   --hshadow: rgba(0, 0, 0, 0.45); --shadow: rgba(0, 0, 0, 0.45);
   --scanline: rgba(0, 0, 0, 0.05);
 }
+body.theme-night {
+  /* Jet black and white, deliberately. No warm cast, no particles, nothing moving:
+     the point is the least light this screen can emit and the fewest things asking
+     for attention. Surfaces step up in near-black so panels still read as panels. */
+  color-scheme: dark;
+  --bg: #000000; --surface: #0a0a0a; --surface-2: #121212;
+  --border: #242424; --border-strong: #3a3a3a;
+  --ink: #ffffff; --dim: #8c8c8c;
+  --accent: #ffffff; --accent-ink: #000000;
+  --accent-dim: rgba(255, 255, 255, 0.09); --accent-border: rgba(255, 255, 255, 0.34);
+  --danger: #ff6b5a;
+  --hshadow: rgba(0, 0, 0, 0.9); --shadow: rgba(0, 0, 0, 0.9);
+  --scanline: rgba(0, 0, 0, 0);
+}
+/* The accent is white here, so anything that paints text ON the accent has to
+   flip to black or it vanishes. */
+body.theme-night .rank-badge,
+body.theme-night .cmd.primary,
+body.theme-night .begin,
+body.theme-night .add-btn.primary { color: var(--accent-ink); }
+
 body.theme-fog {
   color-scheme: light;
   --bg: #e9e5d8; --surface: #f0ece1; --surface-2: #e3ddcb;
@@ -59,26 +80,47 @@ body.theme-rain {
 body.theme-angels {
   /* Angels of Delusion — idol logo palette: hot-pink ground, violet-navy strokes/text, mint-teal ring, cream highlights */
   color-scheme: light;
-  --bg: #f771ae; --surface: #fae9f6; --surface-2: #f6d9ec;
+  --bg: #ee93bc; --surface: #fae9f6; --surface-2: #e2f3ee;
   --border: #ecc9e1; --border-strong: #b98fbf;
   --ink: #3d2c5e; --dim: #8f6b95;
   --accent: #5b4088; --accent-ink: #faf1f8;
   --accent-dim: rgba(91,64,136,0.12); --accent-border: rgba(91,64,136,0.42);
-  --good: #4a9da1; --danger: #d94f6a;
+  --good: #4a9da1; --gold: #f2c94c; --danger: #d94f6a;
   --hshadow: rgba(255,255,255,0.6); --shadow: rgba(75,55,116,0.22);
   --scanline: rgba(75,55,116,0.03);
 }
 #angels-bg{ background:
-  radial-gradient(70% 55% at 50% -6%, rgba(242,146,200,.55), transparent 55%),   /* blush highlight */
-  radial-gradient(60% 50% at 85% 110%, rgba(103,216,209,.30), transparent 60%),  /* mint teal */
-  linear-gradient(180deg, #f9a7d0, #f771ae 52%, #f55798); }                       /* blush → hot pink → deep rose */
-.idol-glow{ position:absolute; border-radius:50%; filter:blur(78px); opacity:.45; animation:idolFloat 16s ease-in-out infinite; }
-.idol-glow.g1{ width:330px; height:330px; background:rgba(103,216,209,.45); top:6%; left:9%; }          /* mint teal */
-.idol-glow.g2{ width:300px; height:300px; background:rgba(230,218,205,.5); bottom:8%; right:16%; animation-delay:-8s; }  /* cream */
-.idol-glow.g3{ width:280px; height:280px; background:rgba(245,87,152,.45); top:5%; right:11%; animation-delay:-4s; }    /* deep rose */
+  radial-gradient(70% 55% at 50% -6%, rgba(242,146,200,.35), transparent 55%),   /* blush highlight */
+  radial-gradient(60% 50% at 85% 110%, rgba(103,216,209,.20), transparent 60%),  /* mint teal */
+  linear-gradient(180deg, #f4bcd7, #ee93bc 52%, #e880a8); }                       /* soft blush → muted pink → soft deep rose */
+.idol-glow{ position:absolute; border-radius:50%; filter:blur(78px); opacity:.3; animation:idolFloat 16s ease-in-out infinite; }
+.idol-glow.g1{ width:330px; height:330px; background:rgba(103,216,209,.4); top:6%; left:9%; }          /* mint teal */
+.idol-glow.g2{ width:300px; height:300px; background:rgba(230,218,205,.45); bottom:8%; right:16%; animation-delay:-8s; }  /* cream */
+.idol-glow.g3{ width:280px; height:280px; background:rgba(242,201,76,.3); top:5%; right:11%; animation-delay:-4s; }    /* gold halo */
 @keyframes idolFloat{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(28px,-22px); } }
 /* soft violet halo on key accents */
 body.theme-angels .rank-badge, body.theme-angels .cmd.primary, body.theme-angels .begin{ box-shadow:0 0 16px rgba(91,64,136,.18); }
+/* wire the idol-logo teal accent into actual UI states, not just bg glow */
+body.theme-angels .rank-badge{ background:linear-gradient(150deg, var(--good), var(--accent)) !important; color:var(--accent-ink) !important; }
+body.theme-angels .day-bar.done,
+body.theme-angels .hm-cell.h1,
+body.theme-angels .hm-cell.h2,
+body.theme-angels .hm-cell.h3,
+body.theme-angels .hm-cell.h4,
+body.theme-angels .legend-dot.legend-done { background: var(--good); }
+/* Gold used to carry progress and CTAs so all three logo hues had UI surface. It
+   read as a mustard control borrowed from another theme, which is exactly what a
+   pink-and-violet page should not contain. Teal takes the progress/reward role
+   instead — still a logo hue, still distinct from the violet doing the chrome —
+   and gold keeps only the background halo, where it reads as light. */
+body.theme-angels .begin,
+body.theme-angels .ft-btn.primary { background-color: var(--good); border-color: var(--good); color: var(--accent-ink); }
+body.theme-angels .xp-bar-fill,
+body.theme-angels .activity-bar-fill,
+body.theme-angels .report-bar-fill { background-color: var(--good); }
+/* the ledger's income green would clash with the teal, so it borrows it outright */
+body.theme-angels .income,
+body.theme-angels .led-stat-value.income { color: #2f7f83; }
 
 body {
   font-family: var(--mono);
@@ -613,6 +655,140 @@ nav button.active { box-shadow: inset 0 -2px 0 var(--accent); }
 .notepad-footer button { background: none; border: none; color: var(--dim); cursor: pointer; font-family: inherit; font-size: 9px; }
 .notepad-footer button:hover { color: var(--danger); }
 
+/* ============ LEDGER ============ */
+/* Money is read in columns, so this leans on tabular figures and right-aligned
+   amounts rather than on the card language the quest side uses. Every colour is
+   a theme token: income and expense borrow the existing good/danger hues so a
+   new theme gets the ledger for free. */
+
+.led-stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 10px; margin-bottom: 18px;
+}
+.led-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 4px;
+}
+.led-stat.wide { grid-column: span 2; }
+.led-stat-label {
+  font-family: var(--pixel); font-size: 9px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--dim);
+}
+.led-stat-value {
+  font-family: var(--mono); font-weight: 600;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+  /* the amount is one token — never let it break after the currency symbol */
+  white-space: nowrap; font-size: clamp(15px, 1.35vw, 20px);
+}
+.led-stat-sub { font-size: 11px; color: var(--dim); }
+.led-stat-value.income, .income { color: var(--good, #6fbf73); }
+.led-stat-value.expense, .expense { color: var(--danger); }
+
+.led-filters {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; align-items: center;
+}
+.led-filters select, .led-filters input {
+  background: var(--surface); border: 1px solid var(--border); color: var(--ink);
+  font-family: var(--mono); font-size: 12px; padding: 6px 8px;
+}
+.led-filters input[type="text"] { min-width: 150px; flex: 1; }
+
+.led-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.led-form label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-family: var(--pixel); font-size: 9px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--dim);
+}
+.led-form label.grow { flex: 1; min-width: 160px; }
+.led-form input, .led-form select {
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--ink);
+  font-family: var(--mono); font-size: 13px; padding: 7px 9px; text-transform: none;
+  letter-spacing: 0;
+}
+.led-form input[type="number"] { width: 120px; text-align: right; font-variant-numeric: tabular-nums; }
+
+#bulkText {
+  width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+  color: var(--ink); font-family: var(--mono); font-size: 12.5px; padding: 10px;
+  line-height: 1.6; resize: vertical;
+}
+
+.led-table { width: 100%; border-collapse: collapse; font-size: 12.5px; font-family: var(--mono); }
+.led-table th {
+  text-align: left; font-family: var(--pixel); font-size: 9px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--dim); font-weight: 400;
+  padding: 8px 10px; border-bottom: 1px solid var(--border-strong);
+}
+.led-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); color: var(--ink); }
+.led-table td.num, .led-table th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.led-table td.mono { color: var(--dim); white-space: nowrap; }
+.led-table tbody tr:hover td { background: var(--accent-dim); }
+.led-table tfoot td {
+  padding-top: 12px; border-bottom: none; color: var(--dim);
+  font-variant-numeric: tabular-nums; vertical-align: top;
+}
+.led-table .arrow { color: var(--dim); }
+.led-table .dim { color: var(--dim); }
+/* the table is the one thing here that genuinely cannot reflow */
+#ledgerTable, #bulkPreview { overflow-x: auto; }
+
+.acc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.acc-card {
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 6px;
+}
+.acc-card.archived { opacity: 0.5; }
+.acc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.acc-name { font-family: var(--pixel); font-size: 12px; color: var(--ink); }
+.acc-kind { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; }
+.acc-bal {
+  font-family: var(--mono); font-size: 17px; font-weight: 600;
+  font-variant-numeric: tabular-nums; color: var(--ink);
+}
+.acc-actions { display: flex; gap: 6px; margin-top: 2px; }
+
+.mini-btn {
+  background: transparent; border: 1px solid var(--border); color: var(--dim);
+  font-family: var(--mono); font-size: 11px; padding: 3px 8px; cursor: pointer;
+}
+.mini-btn:hover { border-color: var(--accent-border); color: var(--ink); }
+.mini-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+.cat-group { margin-bottom: 8px; }
+.cat-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 7px 12px; margin-bottom: 4px;
+}
+.cat-row.sub { margin-left: 22px; background: var(--surface-2); }
+.cat-name { font-family: var(--mono); font-size: 12.5px; color: var(--ink); display: flex; gap: 8px; align-items: center; }
+.cat-type {
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  border: 1px solid var(--border); padding: 1px 5px; color: var(--dim);
+}
+.cat-type.income { color: var(--good, #6fbf73); border-color: var(--good, #6fbf73); }
+.cat-type.expense { color: var(--danger); border-color: var(--danger); }
+
+.bulk-summary {
+  margin-top: 12px; padding: 10px 12px; background: var(--accent-dim);
+  border-left: 3px solid var(--accent); font-size: 12.5px; color: var(--ink);
+}
+.bulk-problems {
+  margin-top: 8px; padding: 10px 12px; border-left: 3px solid var(--danger);
+  background: var(--surface-2); font-size: 12px; color: var(--danger);
+  font-family: var(--mono); line-height: 1.7;
+}
+.tag-new {
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  border: 1px solid var(--accent-border); color: var(--accent); padding: 0 4px;
+}
+
+@media (max-width: 640px) {
+  .led-stat.wide { grid-column: span 2; }
+  .led-form label.grow { min-width: 100%; }
+  .led-filters input[type="text"] { min-width: 100%; }
+}
+
 /* ============ FOOTER ============ */
 footer {
   margin-top: 46px; padding-top: 22px; border-top: 1px dashed var(--border);
@@ -963,6 +1139,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 <div id="stars-bg" class="bg-layer active">
   <div id="stars-container"></div>
 </div>
+<div id="night-bg" class="bg-layer"></div>
 <div id="fog-bg" class="bg-layer">
   <div class="fog-mist"></div>
   <div class="fog-mist"></div>
@@ -1004,6 +1181,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
     <symbol id="i-profile" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.4"/><path d="M5.5 19a6.5 6.5 0 0 1 13 0"/></symbol>
     <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 4v2M12 18v2M4.9 7.5l1.8 1M17.3 15.5l1.8 1M4.9 16.5l1.8-1M17.3 8.5l1.8-1"/></symbol>
     <symbol id="i-overview" viewBox="0 0 24 24"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 13l4-3"/><circle cx="12" cy="13" r="1.3"/></symbol>
+    <symbol id="i-ledger" viewBox="0 0 24 24"><path d="M4 6h16v13H4z"/><path d="M4 10h16"/><path d="M9 6v13"/></symbol>
     <symbol id="i-journal" viewBox="0 0 24 24"><path d="M6 4h10a2 2 0 0 1 2 2v14l-3-2-3 2-3-2-3 2V6a2 2 0 0 1 2-2z"/><path d="M9 8h6M9 12h6"/></symbol>
   </defs></svg>
   <nav>
@@ -1015,6 +1193,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <button onclick="showView('season')" id="nav-season"><svg class="nvic"><use href="#i-season"/></svg>season</button>
       <button onclick="showView('shop')" id="nav-shop"><svg class="nvic"><use href="#i-shop"/></svg>shop</button>
       <button onclick="showView('quotes')" id="nav-quotes"><svg class="nvic"><use href="#i-quotes"/></svg>quotes</button>
+      <button onclick="showView('ledger')" id="nav-ledger"><svg class="nvic"><use href="#i-ledger"/></svg>ledger</button>
       <button onclick="showView('journal')" id="nav-journal"><svg class="nvic"><use href="#i-journal"/></svg>journal</button>
       <button onclick="showView('profile')" id="nav-profile"><svg class="nvic"><use href="#i-profile"/></svg>profile</button>
       <button onclick="showView('settings')" id="nav-settings"><svg class="nvic"><use href="#i-settings"/></svg>settings</button>
@@ -1354,6 +1533,169 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 
   </div>
 
+  <!-- LEDGER VIEW -->
+  <div id="ledger" class="view">
+    <!-- every existing category path, so the entry field autocompletes -->
+    <datalist id="catPathList"></datalist>
+
+    <div class="led-stats">
+      <div class="led-stat wide">
+        <div class="led-stat-label">net worth</div>
+        <div class="led-stat-value" id="netWorth">—</div>
+        <div class="led-stat-sub" id="netWorthSub">—</div>
+      </div>
+      <div class="led-stat">
+        <div class="led-stat-label">in this month</div>
+        <div class="led-stat-value income" id="monthIn">—</div>
+      </div>
+      <div class="led-stat">
+        <div class="led-stat-label">out this month</div>
+        <div class="led-stat-value expense" id="monthOut">—</div>
+      </div>
+      <div class="led-stat">
+        <div class="led-stat-label">net</div>
+        <div class="led-stat-value" id="monthNet">—</div>
+      </div>
+    </div>
+
+    <div class="subtabs" id="ledger-subtabs">
+      <button class="subtab-btn active" id="subtab-btn-ledger-entries" onclick="showSubTab('ledger','entries')">entries</button>
+      <button class="subtab-btn" id="subtab-btn-ledger-add" onclick="showSubTab('ledger','add')">add</button>
+      <button class="subtab-btn" id="subtab-btn-ledger-setup" onclick="showSubTab('ledger','setup')">accounts &amp; categories</button>
+      <button class="subtab-btn" id="subtab-btn-ledger-data" onclick="showSubTab('ledger','data')">import / export</button>
+    </div>
+
+    <!-- entries -->
+    <div class="subtab-panel active" id="subtab-ledger-entries">
+      <div class="section-title">ledger <span class="section-sub">every account, one stream · <span id="ledgerCount"></span></span></div>
+      <div class="led-filters">
+        <select id="fAccount" onchange="setLedgerFilter('account', this.value)"></select>
+        <select id="fType" onchange="setLedgerFilter('type', this.value)">
+          <option value="">all types</option>
+          <option value="expense">expense</option>
+          <option value="income">income</option>
+          <option value="transfer">transfer</option>
+        </select>
+        <select id="fCategory" onchange="setLedgerFilter('category', this.value)"></select>
+        <input type="date" id="fFrom" onchange="setLedgerFilter('from', this.value)" title="from">
+        <input type="date" id="fTo" onchange="setLedgerFilter('to', this.value)" title="to">
+        <input type="text" id="fQuery" placeholder="search notes" oninput="setLedgerFilter('q', this.value)">
+        <button class="mini-btn" onclick="clearLedgerFilters()">clear</button>
+      </div>
+      <div id="ledgerTable"></div>
+    </div>
+
+    <!-- add -->
+    <div class="subtab-panel" id="subtab-ledger-add">
+      <div class="section-title">add one <span class="section-sub">a single entry</span></div>
+      <div class="widget" style="display:block;">
+        <div class="led-form">
+          <label>date<input type="date" id="entDate"></label>
+          <label>type
+            <select id="entType" onchange="syncEntryType()">
+              <option value="expense">expense</option>
+              <option value="income">income</option>
+              <option value="transfer">transfer</option>
+            </select>
+          </label>
+          <label>account<select id="entAccount"></select></label>
+          <label id="entToWrap">into<select id="entTo"></select></label>
+          <label id="entCategoryWrap">category
+            <input type="text" id="entCategory" list="catPathList" placeholder="Food &gt; Groceries">
+          </label>
+          <label>amount<input type="number" id="entAmount" step="0.01" min="0" placeholder="0.00"></label>
+          <label class="grow">note<input type="text" id="entNote" placeholder="optional"></label>
+          <button class="add-btn primary" onclick="addEntry()">record</button>
+        </div>
+        <div class="info-note">a category typed as <code>Parent &gt; Child</code> creates both if they do not exist yet. transfers move between your own accounts and count as neither income nor expense.</div>
+      </div>
+
+      <div class="section-title">bulk insert <span class="section-sub">paste a batch, check it, then commit</span></div>
+      <div class="widget" style="display:block;">
+        <textarea id="bulkText" rows="8" placeholder="2026-08-25, Maybank, Food &gt; Groceries, -142.30, tesco run&#10;2026-08-25, Cash, Transport &gt; Fuel, -80&#10;2026-08-24, Maybank, Income &gt; Salary, 4200, august&#10;Cash, Food &gt; Lunch, -12.50"></textarea>
+        <div class="info-note">
+          one entry per line: <code>date, account, category, amount, note</code> — comma or tab separated.
+          a negative amount is an expense and a positive one is income, the way a statement already reads.
+          drop the date to use today. lines starting with <code>#</code> are ignored.
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+          <button class="add-btn" onclick="previewBulk()">preview</button>
+          <button class="add-btn primary" onclick="commitBulk()">commit</button>
+          <button class="mini-btn" onclick="document.getElementById('bulkText').value=''; document.getElementById('bulkPreview').innerHTML=''; bulkParsed=null;">clear</button>
+        </div>
+        <div id="bulkPreview"></div>
+      </div>
+    </div>
+
+    <!-- accounts & categories -->
+    <div class="subtab-panel" id="subtab-ledger-setup">
+      <div class="section-title">accounts <span class="section-sub">anywhere money sits</span></div>
+      <div id="accountList" class="acc-grid"></div>
+      <div class="widget" style="display:block; margin-top:12px;">
+        <div class="led-form">
+          <label class="grow">name<input type="text" id="accName" placeholder="Maybank"></label>
+          <label>kind
+            <select id="accKind">
+              <option value="savings">savings</option>
+              <option value="spending">spending</option>
+              <option value="cash">cash</option>
+              <option value="credit">credit</option>
+              <option value="investment">investment</option>
+            </select>
+          </label>
+          <label>opening balance<input type="number" id="accOpening" step="0.01" placeholder="0.00"></label>
+          <button class="add-btn primary" onclick="addAccount()">add account</button>
+        </div>
+        <div class="info-note">the opening balance is what was already in there before this ledger started. archiving keeps an account's history but takes it out of the pickers and the net worth total.</div>
+      </div>
+
+      <div class="section-title">categories <span class="section-sub">two levels: a parent and its children</span></div>
+      <div id="categoryList"></div>
+      <div class="widget" style="display:block; margin-top:12px;">
+        <div class="led-form">
+          <label class="grow">name<input type="text" id="catName" placeholder="Groceries"></label>
+          <label>under<select id="catParent"></select></label>
+          <label>type
+            <select id="catType">
+              <option value="expense">expense</option>
+              <option value="income">income</option>
+            </select>
+          </label>
+          <button class="add-btn primary" onclick="addCategory()">add category</button>
+        </div>
+      </div>
+
+      <div class="section-title">currency</div>
+      <div class="widget" style="display:block;">
+        <label class="modrow"><span>Symbol or code</span>
+          <input type="text" id="currencyInput" maxlength="6" style="width:90px" onchange="setCurrency(this.value)">
+        </label>
+        <div class="info-note">shown before every amount. purely a label — nothing is converted.</div>
+      </div>
+    </div>
+
+    <!-- import / export -->
+    <div class="subtab-panel" id="subtab-ledger-data">
+      <div class="section-title">ledger data <span class="section-sub">separate from the profile export</span></div>
+      <div class="widget" style="display:block;">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="add-btn" onclick="exportLedger()">⬇ export ledger (.json)</button>
+          <button class="add-btn" onclick="exportLedgerCsv()">⬇ export view (.csv)</button>
+          <button class="add-btn" onclick="document.getElementById('ledgerImportFile').click()">⬆ import ledger (.json)</button>
+        </div>
+        <input type="file" id="ledgerImportFile" accept="application/json,.json" class="hidden" onchange="importLedgerFile(this)">
+        <div class="info-note" style="margin-top:10px;">
+          the JSON export round-trips everything: accounts, categories and entries. importing asks whether to
+          replace the ledger or merge into it — a merge matches accounts and categories by name and gives every
+          entry a fresh id, so importing the same file twice duplicates rows rather than silently overwriting them.
+          the CSV export writes whatever the entries filter is currently showing, for a spreadsheet.
+          to go the other way, paste CSV into bulk insert.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- SETTINGS VIEW -->
   <div id="settings" class="view">
     <div class="section-title">preferences</div>
@@ -1361,6 +1703,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
       <label class="modrow"><span>Theme</span>
         <span class="theme-pick">
           <button onclick="pickTheme('stars')">stars</button>
+          <button onclick="pickTheme('night')">night</button>
           <button onclick="pickTheme('fog')">fog</button>
           <button onclick="pickTheme('rain')">rain</button>
           <button onclick="pickTheme('angels')">angels</button>
@@ -1417,7 +1760,7 @@ nav button.active{ box-shadow:none; background:var(--accent-dim); color:var(--ac
 /* ============ THEME / AMBIENCE ============ */
 let currentTheme = 'stars';
 let autoTheme = true;
-const themes = ['stars', 'fog', 'rain', 'angels'];
+const themes = ['stars', 'night', 'fog', 'rain', 'angels'];
 
 function createStars() {
   const container = document.getElementById('stars-container');
@@ -1476,12 +1819,13 @@ function checkAutoTheme() {
   if (hour >= 6 && hour < 18) {
     if (currentTheme !== 'fog') applyTheme('fog');
   } else {
-    if (currentTheme !== 'stars') applyTheme('stars');
+    // night rather than stars: same hours, none of the glare or the twinkling
+    if (currentTheme !== 'night') applyTheme('night');
   }
   updateGreeting();
 }
 
-const THEME_COLORS = { stars: '#131009', fog: '#e9e5d8', rain: '#0b0f14', angels: '#f771ae' };
+const THEME_COLORS = { stars: '#131009', night: '#000000', fog: '#e9e5d8', rain: '#0b0f14', angels: '#ee93bc' };
 
 function applyTheme(theme) {
   currentTheme = theme;
@@ -1516,7 +1860,10 @@ function updateGreeting() {
   let greetings = [];
   let subText = '';
 
-  if (currentTheme === 'fog') {
+  if (currentTheme === 'night') {
+    greetings = ['lights down', 'quiet hours', 'late log'];
+    subText = 'nothing moving, nothing glowing';
+  } else if (currentTheme === 'fog') {
     greetings = ['misty morning grind', 'quiet dawn quests', 'soft light, small wins'];
     subText = "a gentle start on today's quests";
   } else if (currentTheme === 'rain') {
@@ -1550,6 +1897,7 @@ function showView(viewName) {
   document.querySelectorAll('.nav-links button').forEach(a => a.classList.remove('active'));
   document.getElementById('nav-' + viewName).classList.add('active');
   window.scrollTo(0, 0);
+  if (viewName === 'ledger' && state) renderLedger();
   if (viewName === 'profile' && statsDirty && state) {
     renderStatistics();
     statsDirty = false;
@@ -1803,6 +2151,7 @@ function defaultState() {
     freezeTokens: 0, freezeEarnedTotal: 0,
     seasonKey: getSeasonKey(), seasonXp: 0, claimedMilestones: [],
     unlockedAchievements: {}, pinnedRewardId: null,
+    ledger: defaultLedger(),
     dailyActivityPoints: 0, dailyActivityClaimed: [],
     weeklyActivityPoints: 0, weeklyActivityClaimed: [],
     monthlyActivityPoints: 0, monthlyActivityClaimed: []
@@ -1845,6 +2194,8 @@ function applyDefaultsAndRollover(raw) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) data = {};
   const d = defaultState();
   for (const k in d) if (!(k in data)) data[k] = d[k];
+  // nested, so the shallow fill above cannot repair a partial one
+  data.ledger = normaliseLedger(data.ledger);
 
   // never let the computed "today" move earlier than what's already recorded —
   // guards against the daily cutoff moving (e.g. midnight -> 4am) while a date
@@ -2280,6 +2631,640 @@ function saveRewardEdit() {
   afterAction();
 }
 function startRewardEdit(id) { editing = { id, kind: 'reward' }; render(); }
+
+/* ============ LEDGER ============ */
+/* Real money, deliberately separate from points. Quests pay in XP and points;
+   this pays in currency and never touches them. The two economies share a
+   profile and nothing else.
+
+   One stream, many accounts. Every entry names the account it moved through, so
+   "all accounts" is just the unfiltered list rather than a separate roll-up that
+   could drift out of step with the parts.
+
+   Transfers are one row, not two. A move between your own accounts is not income
+   anywhere and not an expense anywhere, so it carries a toAccountId, counts
+   against both balances, and is excluded from every income/expense total. */
+
+const ACCOUNT_KINDS = ['savings', 'spending', 'cash', 'credit', 'investment'];
+
+function defaultLedger() {
+  return { currency: 'RM', accounts: [], categories: [], entries: [] };
+}
+
+/** Fills in anything a older profile (or a hand-edited import) is missing. */
+function normaliseLedger(raw) {
+  const d = defaultLedger();
+  const l = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {};
+  for (const k in d) if (!(k in l)) l[k] = d[k];
+  if (!Array.isArray(l.accounts)) l.accounts = [];
+  if (!Array.isArray(l.categories)) l.categories = [];
+  if (!Array.isArray(l.entries)) l.entries = [];
+  if (typeof l.currency !== 'string' || !l.currency) l.currency = d.currency;
+  l.accounts.forEach(a => {
+    a.opening = Number(a.opening) || 0;
+    if (!ACCOUNT_KINDS.includes(a.kind)) a.kind = 'spending';
+  });
+  l.entries.forEach(e => {
+    e.amount = Number(e.amount) || 0;
+    if (!['income', 'expense', 'transfer'].includes(e.type)) e.type = 'expense';
+  });
+  return l;
+}
+
+const led = () => state.ledger;
+
+function money(n) {
+  const v = Number(n) || 0;
+  const s = Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (v < 0 ? '-' : '') + led().currency + ' ' + s;
+}
+
+function accountById(id) { return led().accounts.find(a => a.id === id) || null; }
+function categoryById(id) { return led().categories.find(c => c.id === id) || null; }
+
+/** "Food > Groceries", or just "Food" for a top-level one. */
+function categoryPath(id) {
+  const c = categoryById(id);
+  if (!c) return '—';
+  const parent = c.parent ? categoryById(c.parent) : null;
+  return parent ? parent.name + ' > ' + c.name : c.name;
+}
+
+/** Opening balance plus everything that has moved through the account since. */
+function accountBalance(accountId) {
+  const acc = accountById(accountId);
+  if (!acc) return 0;
+  let total = Number(acc.opening) || 0;
+  for (const e of led().entries) {
+    if (e.type === 'transfer') {
+      if (e.accountId === accountId) total -= e.amount;
+      if (e.toAccountId === accountId) total += e.amount;
+    } else if (e.accountId === accountId) {
+      total += e.type === 'income' ? e.amount : -e.amount;
+    }
+  }
+  return total;
+}
+
+function netWorth() {
+  return led().accounts.filter(a => !a.archived).reduce((sum, a) => sum + accountBalance(a.id), 0);
+}
+
+/* ---- accounts ---- */
+
+function addAccount() {
+  const name = document.getElementById('accName').value.trim();
+  if (!name) return showToast('name the account first');
+  if (led().accounts.some(a => a.name.toLowerCase() === name.toLowerCase())) {
+    return showToast('an account called "' + name + '" already exists');
+  }
+  led().accounts.push({
+    id: uid(), name,
+    kind: document.getElementById('accKind').value,
+    opening: Number(document.getElementById('accOpening').value) || 0,
+    archived: false
+  });
+  document.getElementById('accName').value = '';
+  document.getElementById('accOpening').value = '';
+  saveData(); renderLedger();
+  showToast('added account ' + name);
+}
+
+function toggleAccountArchived(id) {
+  const acc = accountById(id);
+  if (!acc) return;
+  acc.archived = !acc.archived;
+  saveData(); renderLedger();
+}
+
+function removeAccount(id) {
+  const acc = accountById(id);
+  if (!acc) return;
+  const used = led().entries.filter(e => e.accountId === id || e.toAccountId === id).length;
+  if (used && !confirm('"' + acc.name + '" has ' + used + ' entr' + (used === 1 ? 'y' : 'ies') +
+      '. Deleting the account deletes them too. Continue?')) return;
+  led().entries = led().entries.filter(e => e.accountId !== id && e.toAccountId !== id);
+  led().accounts = led().accounts.filter(a => a.id !== id);
+  saveData(); renderLedger();
+  showToast('removed ' + acc.name);
+}
+
+/* ---- categories ---- */
+
+function addCategory() {
+  const name = document.getElementById('catName').value.trim();
+  if (!name) return showToast('name the category first');
+  const parent = document.getElementById('catParent').value || null;
+  const type = document.getElementById('catType').value;
+  const siblings = led().categories.filter(c => (c.parent || null) === parent);
+  if (siblings.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+    return showToast('that category already exists here');
+  }
+  led().categories.push({ id: uid(), name, parent, type });
+  document.getElementById('catName').value = '';
+  saveData(); renderLedger();
+  showToast('added ' + (parent ? 'subcategory' : 'category') + ' ' + name);
+}
+
+function removeCategory(id) {
+  const cat = categoryById(id);
+  if (!cat) return;
+  const kids = led().categories.filter(c => c.parent === id);
+  const used = led().entries.filter(e => e.categoryId === id || kids.some(k => k.id === e.categoryId)).length;
+  let msg = 'Delete "' + cat.name + '"?';
+  if (kids.length) msg += ' Its ' + kids.length + ' subcategor' + (kids.length === 1 ? 'y' : 'ies') + ' go too.';
+  if (used) msg += ' ' + used + ' entr' + (used === 1 ? 'y' : 'ies') + ' will be left uncategorised.';
+  if (!confirm(msg)) return;
+  const doomed = new Set([id, ...kids.map(k => k.id)]);
+  led().categories = led().categories.filter(c => !doomed.has(c.id));
+  led().entries.forEach(e => { if (doomed.has(e.categoryId)) e.categoryId = null; });
+  saveData(); renderLedger();
+}
+
+/** Finds a category by "Parent > Child" or plain name, optionally creating it. */
+function resolveCategory(text, type, create) {
+  const raw = (text || '').trim();
+  if (!raw) return null;
+  const parts = raw.split('>').map(s => s.trim()).filter(Boolean);
+  let parentId = null;
+  for (let i = 0; i < parts.length; i += 1) {
+    const name = parts[i];
+    let found = led().categories.find(c =>
+      (c.parent || null) === parentId && c.name.toLowerCase() === name.toLowerCase());
+    if (!found) {
+      if (!create) return null;
+      found = { id: uid(), name, parent: parentId, type };
+      led().categories.push(found);
+    }
+    parentId = found.id;
+  }
+  return parentId;
+}
+
+function resolveAccount(text, create) {
+  const name = (text || '').trim();
+  if (!name) return null;
+  let found = led().accounts.find(a => a.name.toLowerCase() === name.toLowerCase());
+  if (!found && create) {
+    found = { id: uid(), name, kind: 'spending', opening: 0, archived: false };
+    led().accounts.push(found);
+  }
+  return found ? found.id : null;
+}
+
+/* ---- entries ---- */
+
+function addEntry() {
+  const l = led();
+  if (!l.accounts.length) return showToast('add an account first');
+
+  const type = document.getElementById('entType').value;
+  const amount = Math.abs(Number(document.getElementById('entAmount').value) || 0);
+  if (!amount) return showToast('enter an amount');
+
+  const accountId = document.getElementById('entAccount').value;
+  if (!accountId) return showToast('pick an account');
+
+  const entry = {
+    id: uid(),
+    date: document.getElementById('entDate').value || todayStr(),
+    accountId, type, amount,
+    categoryId: null,
+    note: document.getElementById('entNote').value.trim()
+  };
+
+  if (type === 'transfer') {
+    const to = document.getElementById('entTo').value;
+    if (!to || to === accountId) return showToast('pick a different account to transfer into');
+    entry.toAccountId = to;
+  } else {
+    entry.categoryId = resolveCategory(document.getElementById('entCategory').value, type, true);
+  }
+
+  l.entries.push(entry);
+  document.getElementById('entAmount').value = '';
+  document.getElementById('entNote').value = '';
+  saveData(); renderLedger();
+  showToast(type + ' ' + money(amount) + ' recorded');
+}
+
+function removeEntry(id) {
+  const before = led().entries.length;
+  led().entries = led().entries.filter(e => e.id !== id);
+  if (led().entries.length !== before) { saveData(); renderLedger(); showToast('entry deleted'); }
+}
+
+/* ---- bulk insert ----
+   One entry per line, comma or tab separated:
+       date, account, category, amount, note
+   A negative amount is an expense and a positive one is income, which is how a
+   bank statement already reads. Date may be omitted for today. Nothing is written
+   until the preview is confirmed, because a paste of fifty lines is exactly where
+   a silent misparse does the most damage. */
+
+let bulkParsed = null;
+
+function parseBulk(text) {
+  const rows = [];
+  const problems = [];
+  const lines = text.split(/\r?\n/);
+
+  lines.forEach((line, i) => {
+    const raw = line.trim();
+    if (!raw || raw.startsWith('#')) return;
+
+    const cells = raw.includes('\t') ? raw.split('\t') : raw.split(',');
+    const parts = cells.map(c => c.trim());
+    if (parts.length < 2) { problems.push('line ' + (i + 1) + ': need at least an account and an amount'); return; }
+
+    // a leading yyyy-mm-dd is a date; without one the row starts at the account
+    let date = todayStr();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(parts[0])) date = parts.shift();
+
+    const account = parts.shift() || '';
+    const amountRaw = parts.length > 1 ? parts[1] : parts[0];
+    const category = parts.length > 1 ? parts[0] : '';
+    const note = parts.slice(2).join(', ');
+
+    const amount = Number(String(amountRaw).replace(/[^0-9.\-]/g, ''));
+    if (!Number.isFinite(amount) || amount === 0) {
+      problems.push('line ' + (i + 1) + ': "' + amountRaw + '" is not an amount');
+      return;
+    }
+    if (!account) { problems.push('line ' + (i + 1) + ': no account'); return; }
+
+    rows.push({
+      date, account, category, note,
+      type: amount < 0 ? 'expense' : 'income',
+      amount: Math.abs(amount),
+      newAccount: !led().accounts.some(a => a.name.toLowerCase() === account.toLowerCase()),
+      newCategory: Boolean(category) && resolveCategory(category, amount < 0 ? 'expense' : 'income', false) === null
+    });
+  });
+
+  return { rows, problems };
+}
+
+function previewBulk() {
+  const text = document.getElementById('bulkText').value;
+  const out = document.getElementById('bulkPreview');
+  if (!text.trim()) { out.innerHTML = ''; bulkParsed = null; return; }
+
+  const { rows, problems } = parseBulk(text);
+  bulkParsed = rows;
+
+  const newAccounts = [...new Set(rows.filter(r => r.newAccount).map(r => r.account))];
+  const newCats = [...new Set(rows.filter(r => r.newCategory).map(r => r.category))];
+
+  let html = '<div class="bulk-summary">' +
+    '<strong>' + rows.length + '</strong> row' + (rows.length === 1 ? '' : 's') + ' ready';
+  if (newAccounts.length) html += ' · will create account' + (newAccounts.length === 1 ? '' : 's') +
+    ': <em>' + newAccounts.map(escapeHtml).join(', ') + '</em>';
+  if (newCats.length) html += ' · will create categor' + (newCats.length === 1 ? 'y' : 'ies') +
+    ': <em>' + newCats.map(escapeHtml).join(', ') + '</em>';
+  html += '</div>';
+
+  if (problems.length) {
+    html += '<div class="bulk-problems">' + problems.length + ' line' + (problems.length === 1 ? '' : 's') +
+      ' skipped:<br>' + problems.map(escapeHtml).join('<br>') + '</div>';
+  }
+
+  if (rows.length) {
+    html += '<table class="led-table"><thead><tr><th>date</th><th>account</th><th>category</th>' +
+      '<th class="num">amount</th><th>note</th></tr></thead><tbody>';
+    rows.slice(0, 40).forEach(r => {
+      html += '<tr><td>' + r.date + '</td>' +
+        '<td>' + escapeHtml(r.account) + (r.newAccount ? ' <span class="tag-new">new</span>' : '') + '</td>' +
+        '<td>' + (r.category ? escapeHtml(r.category) + (r.newCategory ? ' <span class="tag-new">new</span>' : '') : '—') + '</td>' +
+        '<td class="num ' + r.type + '">' + (r.type === 'expense' ? '-' : '+') + money(r.amount) + '</td>' +
+        '<td>' + escapeHtml(r.note || '') + '</td></tr>';
+    });
+    html += '</tbody></table>';
+    if (rows.length > 40) html += '<div class="info-note">showing the first 40 of ' + rows.length + '.</div>';
+  }
+
+  out.innerHTML = html;
+}
+
+function commitBulk() {
+  if (!bulkParsed || !bulkParsed.length) return showToast('nothing to import — preview it first');
+  const rows = bulkParsed;
+  rows.forEach(r => {
+    const accountId = resolveAccount(r.account, true);
+    const categoryId = r.category ? resolveCategory(r.category, r.type, true) : null;
+    led().entries.push({
+      id: uid(), date: r.date, accountId, categoryId,
+      type: r.type, amount: r.amount, note: r.note
+    });
+  });
+  document.getElementById('bulkText').value = '';
+  document.getElementById('bulkPreview').innerHTML = '';
+  bulkParsed = null;
+  saveData(); renderLedger();
+  showToast('imported ' + rows.length + ' entries');
+}
+
+/* ---- filtering ---- */
+
+const ledgerFilter = { account: '', type: '', category: '', from: '', to: '', q: '' };
+
+function setLedgerFilter(key, value) {
+  ledgerFilter[key] = value;
+  renderLedgerTable();
+}
+
+function clearLedgerFilters() {
+  Object.keys(ledgerFilter).forEach(k => { ledgerFilter[k] = ''; });
+  ['fAccount', 'fType', 'fCategory', 'fFrom', 'fTo', 'fQuery'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderLedgerTable();
+}
+
+function filteredEntries() {
+  const f = ledgerFilter;
+  const q = f.q.toLowerCase();
+  return led().entries
+    .filter(e => {
+      if (f.account && e.accountId !== f.account && e.toAccountId !== f.account) return false;
+      if (f.type && e.type !== f.type) return false;
+      if (f.category) {
+        const kids = led().categories.filter(c => c.parent === f.category).map(c => c.id);
+        if (e.categoryId !== f.category && !kids.includes(e.categoryId)) return false;
+      }
+      if (f.from && e.date < f.from) return false;
+      if (f.to && e.date > f.to) return false;
+      if (q) {
+        const hay = [e.note || '', categoryPath(e.categoryId), accountById(e.accountId)?.name || ''].join(' ').toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    })
+    .sort((a, b) => (b.date === a.date ? 0 : b.date < a.date ? -1 : 1));
+}
+
+/* ---- export / import ---- */
+
+function exportLedger() {
+  const payload = { kind: 'quest-log-ledger', version: 1, exportedAt: new Date().toISOString(), ledger: led() };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ledger-' + currentProfile + '-' + todayStr() + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('ledger exported');
+}
+
+function exportLedgerCsv() {
+  const cell = v => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const lines = ['date,account,to_account,type,category,amount,note'];
+  filteredEntries().forEach(e => {
+    lines.push([
+      e.date,
+      cell(accountById(e.accountId)?.name || ''),
+      cell(e.toAccountId ? (accountById(e.toAccountId)?.name || '') : ''),
+      e.type,
+      cell(e.categoryId ? categoryPath(e.categoryId) : ''),
+      (e.type === 'expense' ? -e.amount : e.amount).toFixed(2),
+      cell(e.note || '')
+    ].join(','));
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ledger-' + currentProfile + '-' + todayStr() + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('exported ' + filteredEntries().length + ' rows as CSV');
+}
+
+function importLedgerFile(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let parsed;
+    try { parsed = JSON.parse(reader.result); } catch (e) { return showToast('that file is not valid JSON'); }
+    const incoming = parsed && parsed.ledger ? parsed.ledger : parsed;
+    if (!incoming || !Array.isArray(incoming.entries) || !Array.isArray(incoming.accounts)) {
+      return showToast('that does not look like a ledger export');
+    }
+    const mode = led().entries.length
+      ? (confirm('Replace the current ledger?\n\nOK replaces it entirely.\nCancel merges the imported entries into it.') ? 'replace' : 'merge')
+      : 'replace';
+
+    if (mode === 'replace') {
+      state.ledger = normaliseLedger(incoming);
+    } else {
+      const l = led();
+      const accMap = {};
+      normaliseLedger(incoming).accounts.forEach(a => { accMap[a.id] = resolveAccount(a.name, true); });
+      const catMap = {};
+      const incCats = normaliseLedger(incoming).categories;
+      const pathOf = id => {
+        const c = incCats.find(x => x.id === id);
+        if (!c) return '';
+        const p = c.parent ? incCats.find(x => x.id === c.parent) : null;
+        return p ? p.name + ' > ' + c.name : c.name;
+      };
+      incCats.forEach(c => { catMap[c.id] = resolveCategory(pathOf(c.id), c.type, true); });
+      // ids are only unique within an export, so every merged row gets a fresh one
+      normaliseLedger(incoming).entries.forEach(e => {
+        l.entries.push({
+          id: uid(), date: e.date, type: e.type, amount: e.amount, note: e.note || '',
+          accountId: accMap[e.accountId] || null,
+          toAccountId: e.toAccountId ? (accMap[e.toAccountId] || null) : undefined,
+          categoryId: e.categoryId ? (catMap[e.categoryId] || null) : null
+        });
+      });
+    }
+    saveData(); renderLedger();
+    showToast(mode === 'replace' ? 'ledger replaced' : 'ledger merged');
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+function setCurrency(value) {
+  led().currency = (value || '').trim() || 'RM';
+  saveData(); renderLedger();
+}
+
+/* ---- rendering ---- */
+
+function renderLedger() {
+  if (!state) return;
+  if (!state.ledger) state.ledger = defaultLedger();
+  renderLedgerAccounts();
+  renderLedgerCategories();
+  renderLedgerForm();
+  renderLedgerTable();
+}
+
+function renderLedgerAccounts() {
+  const l = led();
+  const wrap = document.getElementById('accountList');
+  const active = l.accounts.filter(a => !a.archived);
+
+  if (!l.accounts.length) {
+    wrap.innerHTML = '<div class="empty-state">no accounts yet — add one below. an account is anywhere money sits: a bank, a wallet, a card.</div>';
+  } else {
+    wrap.innerHTML = l.accounts.map(a => {
+      const bal = accountBalance(a.id);
+      return '<div class="acc-card' + (a.archived ? ' archived' : '') + '">' +
+        '<div class="acc-head"><span class="acc-name">' + escapeHtml(a.name) + '</span>' +
+        '<span class="acc-kind">' + a.kind + (a.archived ? ' · archived' : '') + '</span></div>' +
+        '<div class="acc-bal ' + (bal < 0 ? 'expense' : '') + '">' + money(bal) + '</div>' +
+        '<div class="acc-actions">' +
+        '<button class="mini-btn" onclick="toggleAccountArchived(\'' + a.id + '\')">' + (a.archived ? 'restore' : 'archive') + '</button>' +
+        '<button class="mini-btn danger" onclick="removeAccount(\'' + a.id + '\')">delete</button>' +
+        '</div></div>';
+    }).join('');
+  }
+
+  document.getElementById('netWorth').textContent = money(netWorth());
+  document.getElementById('netWorthSub').textContent =
+    active.length + ' active account' + (active.length === 1 ? '' : 's');
+
+  // this month's flow, transfers excluded — moving your own money is neither
+  const month = todayStr().slice(0, 7);
+  let inc = 0, exp = 0;
+  l.entries.forEach(e => {
+    if (!e.date.startsWith(month) || e.type === 'transfer') return;
+    if (e.type === 'income') inc += e.amount; else exp += e.amount;
+  });
+  document.getElementById('monthIn').textContent = money(inc);
+  document.getElementById('monthOut').textContent = money(exp);
+  document.getElementById('monthNet').textContent = money(inc - exp);
+  document.getElementById('monthNet').className = 'led-stat-value ' + (inc - exp < 0 ? 'expense' : 'income');
+}
+
+function renderLedgerCategories() {
+  const l = led();
+  const tops = l.categories.filter(c => !c.parent);
+  const wrap = document.getElementById('categoryList');
+
+  if (!l.categories.length) {
+    wrap.innerHTML = '<div class="empty-state">no categories yet. you can also just type one when adding an entry — "Food &gt; Groceries" creates both.</div>';
+  } else {
+    wrap.innerHTML = tops.map(c => {
+      const kids = l.categories.filter(k => k.parent === c.id);
+      return '<div class="cat-group">' +
+        '<div class="cat-row"><span class="cat-name">' + escapeHtml(c.name) +
+        '<span class="cat-type ' + c.type + '">' + c.type + '</span></span>' +
+        '<button class="mini-btn danger" onclick="removeCategory(\'' + c.id + '\')">×</button></div>' +
+        kids.map(k => '<div class="cat-row sub"><span class="cat-name">' + escapeHtml(k.name) + '</span>' +
+          '<button class="mini-btn danger" onclick="removeCategory(\'' + k.id + '\')">×</button></div>').join('') +
+        '</div>';
+    }).join('');
+  }
+
+  // parent picker: only top-level categories can be parents, so the tree stays
+  // two deep and a path is always readable as "Parent > Child"
+  const parentSel = document.getElementById('catParent');
+  const keep = parentSel.value;
+  parentSel.innerHTML = '<option value="">— top level —</option>' +
+    tops.map(c => '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>').join('');
+  parentSel.value = keep;
+
+  const datalist = document.getElementById('catPathList');
+  datalist.innerHTML = l.categories.map(c =>
+    '<option value="' + escapeHtml(categoryPath(c.id)) + '"></option>').join('');
+
+  const fCat = document.getElementById('fCategory');
+  const keepF = fCat.value;
+  fCat.innerHTML = '<option value="">all categories</option>' +
+    tops.map(c => '<option value="' + c.id + '">' + escapeHtml(c.name) + '</option>').join('');
+  fCat.value = keepF;
+}
+
+function renderLedgerForm() {
+  const l = led();
+  const opts = l.accounts.filter(a => !a.archived)
+    .map(a => '<option value="' + a.id + '">' + escapeHtml(a.name) + '</option>').join('');
+
+  ['entAccount', 'entTo'].forEach(id => {
+    const sel = document.getElementById(id);
+    const keep = sel.value;
+    sel.innerHTML = opts;
+    if (keep) sel.value = keep;
+  });
+
+  const fAcc = document.getElementById('fAccount');
+  const keepF = fAcc.value;
+  fAcc.innerHTML = '<option value="">all accounts</option>' + opts;
+  fAcc.value = keepF;
+
+  const dateEl = document.getElementById('entDate');
+  if (!dateEl.value) dateEl.value = todayStr();
+
+  document.getElementById('currencyInput').value = l.currency;
+  syncEntryType();
+}
+
+/** A transfer has a destination and no category; income and expense are the reverse. */
+function syncEntryType() {
+  const isTransfer = document.getElementById('entType').value === 'transfer';
+  document.getElementById('entToWrap').style.display = isTransfer ? '' : 'none';
+  document.getElementById('entCategoryWrap').style.display = isTransfer ? 'none' : '';
+}
+
+function renderLedgerTable() {
+  const rows = filteredEntries();
+  const wrap = document.getElementById('ledgerTable');
+
+  if (!led().entries.length) {
+    wrap.innerHTML = '<div class="empty-state">the ledger is empty. add an entry above, or paste a batch into bulk insert.</div>';
+    document.getElementById('ledgerCount').textContent = '';
+    return;
+  }
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="empty-state">nothing matches those filters.</div>';
+    document.getElementById('ledgerCount').textContent = '0 of ' + led().entries.length;
+    return;
+  }
+
+  let inc = 0, exp = 0;
+  rows.forEach(e => {
+    if (e.type === 'income') inc += e.amount;
+    else if (e.type === 'expense') exp += e.amount;
+  });
+
+  let html = '<table class="led-table"><thead><tr>' +
+    '<th>date</th><th>account</th><th>category</th><th>note</th><th class="num">amount</th><th></th>' +
+    '</tr></thead><tbody>';
+
+  rows.forEach(e => {
+    const acc = accountById(e.accountId);
+    const accLabel = e.type === 'transfer'
+      ? escapeHtml(acc ? acc.name : '—') + ' <span class="arrow">→</span> ' +
+        escapeHtml(accountById(e.toAccountId)?.name || '—')
+      : escapeHtml(acc ? acc.name : '—');
+    const sign = e.type === 'expense' ? '-' : e.type === 'income' ? '+' : '';
+    html += '<tr>' +
+      '<td class="mono">' + e.date + '</td>' +
+      '<td>' + accLabel + '</td>' +
+      '<td>' + (e.type === 'transfer' ? '<span class="dim">transfer</span>' : escapeHtml(categoryPath(e.categoryId))) + '</td>' +
+      '<td>' + escapeHtml(e.note || '') + '</td>' +
+      '<td class="num ' + e.type + '">' + sign + money(e.amount) + '</td>' +
+      '<td><button class="mini-btn danger" onclick="removeEntry(\'' + e.id + '\')">×</button></td>' +
+      '</tr>';
+  });
+
+  html += '</tbody><tfoot><tr>' +
+    '<td colspan="4">showing ' + rows.length + ' of ' + led().entries.length + '</td>' +
+    '<td class="num"><span class="income">+' + money(inc) + '</span><br><span class="expense">-' + money(exp) + '</span>' +
+    '<br><strong>' + money(inc - exp) + '</strong></td><td></td>' +
+    '</tr></tfoot></table>';
+
+  wrap.innerHTML = html;
+  document.getElementById('ledgerCount').textContent = rows.length + ' of ' + led().entries.length;
+}
 
 function exportData() {
   if (!state || !currentProfile) return;
